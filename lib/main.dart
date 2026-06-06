@@ -310,7 +310,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   ),
                   const SizedBox(height: 32),
                   Text(
-                    'NEWSOS LABS',
+                    'QuantNews Labs',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
@@ -386,7 +386,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: const PremiumAppBar(title: 'NEWSOS'),
+      appBar: const PremiumAppBar(title: 'QUANTNEWS'),
       body: Stack(
         children: [
           AnimatedBuilder(
@@ -451,7 +451,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         );
                       },
                       child: Text(
-                        'We are crafting something extraordinary. Enter your key to pre-register. build bY Anubhav Singh Rajput ',
+                        'We are crafting something extraordinary. Enter your key to pre-register. build by Anubhav Singh Rajput ',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.35),

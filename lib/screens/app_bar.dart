@@ -6,7 +6,7 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? leading;
   const PremiumAppBar({
     Key? key,
-    this.title = 'NEWSOS',
+    this.title = 'QUANTNEWS',
     this.actions,
     this.leading,
   }) : super(key: key);
