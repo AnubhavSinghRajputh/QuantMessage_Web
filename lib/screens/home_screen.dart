@@ -12,17 +12,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    // Background animation: continuous loop
     _bgController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 15),
     )..repeat();
-    // Text typing animation controller
     _textController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
     );
-    // Start typing after a short delay
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
         _textController.forward();
@@ -42,7 +39,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       appBar: const PremiumAppBar(title: 'QUANTNEWS'),
       body: Stack(
         children: [
-          // 1. Constant Premium Background Animation (Fluid Mesh/Aurora Painter)
           AnimatedBuilder(
             animation: _bgController,
             builder: (context, child) {
@@ -52,8 +48,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               );
             },
           ),
-
-          // Subtle Dark Vignette Overlay
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -67,7 +61,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
-          // 2. Foreground Typing Animated Text
           SafeArea(
             child: Center(
               child: Padding(
@@ -76,7 +69,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Small decorative tag
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
@@ -87,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: const Text(
                         'SYSTEM ONLINE',
                         style: TextStyle(
-                          color: Colors.grey,
+                          color: Colors.green,
                           fontSize: 9,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 2.0,
@@ -95,13 +87,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    // Typing Animation widget
                     TypingTextAnimation(
                       controller: _textController,
                       fullText: "coming soon stay tuned",
                     ),
                     const SizedBox(height: 16),
-                    // Ambient subtitle indicating progress
                     AnimatedBuilder(
                       animation: _textController,
                       builder: (context, child) {
@@ -111,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         );
                       },
                       child: Text(
-                        'We are crafting something extraordinary. Enter your key to pre-register.',
+                        'We are crafting something extraordinary. Enter your key to pre-register. build by Anubhav Singh Rajput ',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.35),
@@ -122,7 +112,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     ),
                     const SizedBox(height: 40),
-                    // Interactive glassmorphic text field
                     AnimatedBuilder(
                       animation: _textController,
                       builder: (context, child) {
@@ -186,7 +175,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 }
-/// A Custom Painter that draws smooth, organic moving gradient blobs for a premium background.
+
+// 4) ANIMATED FLUID MESH GRADIENT PAINTER
+
 class FluidBackgroundPainter extends CustomPainter {
   final double animationValue;
   FluidBackgroundPainter({required this.animationValue});
@@ -198,15 +189,11 @@ class FluidBackgroundPainter extends CustomPainter {
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 140);
     final paintBlob3 = Paint()
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 100);
-    // Center coordinates
     final cx = size.width / 2;
     final cy = size.height / 2;
-    // Background base
     final basePaint = Paint()..color = const Color(0xFF070709);
     canvas.drawRect(Offset.zero & size, basePaint);
-    // Calculate motion paths using trigonometry
     final angle = animationValue * 2 * math.pi;
-    // Blob 1: Moving in a circular path in top-right area (Cold White/Grey glow)
     final b1x = cx + math.cos(angle) * (size.width * 0.25) + 60;
     final b1y = cy + math.sin(angle) * (size.height * 0.15) - 100;
     final radius1 = size.width * 0.45;
@@ -219,7 +206,6 @@ class FluidBackgroundPainter extends CustomPainter {
       stops: const [0.0, 0.5, 1.0],
     ).createShader(Rect.fromCircle(center: Offset(b1x, b1y), radius: radius1));
     canvas.drawCircle(Offset(b1x, b1y), radius1, paintBlob1);
-    // Blob 2: Moving in an oval path in bottom-left area (Deep Slate Grey glow)
     final b2x = cx - math.sin(angle + math.pi / 3) * (size.width * 0.3) - 40;
     final b2y = cy - math.cos(angle + math.pi / 3) * (size.height * 0.2) + 120;
     final radius2 = size.width * 0.5;
@@ -232,7 +218,6 @@ class FluidBackgroundPainter extends CustomPainter {
       stops: const [0.0, 0.6, 1.0],
     ).createShader(Rect.fromCircle(center: Offset(b2x, b2y), radius: radius2));
     canvas.drawCircle(Offset(b2x, b2y), radius2, paintBlob2);
-    // Blob 3: Center-ish slow breathing glow
     final breathScale = 1.0 + 0.1 * math.sin(angle * 2);
     final radius3 = size.width * 0.35 * breathScale;
     paintBlob3.shader = RadialGradient(
@@ -250,8 +235,9 @@ class FluidBackgroundPainter extends CustomPainter {
     return oldDelegate.animationValue != animationValue;
   }
 }
-/// Typing animation widget that reveals text letter by letter,
-/// with customized white/grey styling and a blinking cursor.
+
+// 5. TYPING TEXT ANIMATION
+
 class TypingTextAnimation extends StatefulWidget {
   final AnimationController controller;
   final String fullText;
@@ -270,7 +256,6 @@ class _TypingTextAnimationState extends State<TypingTextAnimation> with SingleTi
   @override
   void initState() {
     super.initState();
-    // Mapping character reveal to the animation controller
     _characterCount = StepTween(
       begin: 0,
       end: widget.fullText.length,
@@ -280,7 +265,6 @@ class _TypingTextAnimationState extends State<TypingTextAnimation> with SingleTi
         curve: const Interval(0.0, 0.9, curve: Curves.linear),
       ),
     );
-    // Cursor blink controller
     _cursorController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -322,7 +306,6 @@ class _TypingTextAnimationState extends State<TypingTextAnimation> with SingleTi
             ),
             children: [
               ..._buildStyledSpans(visibleText),
-              // Blinking cursor span
               WidgetSpan(
                 alignment: PlaceholderAlignment.middle,
                 child: Opacity(
@@ -340,16 +323,10 @@ class _TypingTextAnimationState extends State<TypingTextAnimation> with SingleTi
       },
     );
   }
-  /// Splitting text to apply a premium color logic (Dynamic white & grey combination)
-  /// "coming soon" -> Bold White
-  /// "stay tuned" -> Sleek Slate Grey
   List<TextSpan> _buildStyledSpans(String typedText) {
     const part1 = "coming soon";
-    const part2 = " stay tuned";
-
     List<TextSpan> spans = [];
     if (typedText.length <= part1.length) {
-      // Still typing part 1: all in white
       spans.add(
         TextSpan(
           text: typedText,
@@ -367,7 +344,6 @@ class _TypingTextAnimationState extends State<TypingTextAnimation> with SingleTi
         ),
       );
     } else {
-      // Part 1 is fully typed, typing part 2
       spans.add(
         const TextSpan(
           text: part1,
@@ -384,13 +360,12 @@ class _TypingTextAnimationState extends State<TypingTextAnimation> with SingleTi
           ),
         ),
       );
-
       final part2Typed = typedText.substring(part1.length);
       spans.add(
         TextSpan(
           text: part2Typed,
           style: const TextStyle(
-            color: Color(0xFF7E7E86), // Premium Slate Grey
+            color: Color(0xFF7E7E86),
             fontWeight: FontWeight.w300,
           ),
         ),

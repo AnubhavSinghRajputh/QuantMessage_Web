@@ -32,7 +32,6 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Leading/Logo Section
                   leading ?? Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -80,7 +79,6 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
                       ),
                     ],
                   ),
-                  // Actions Section
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: actions ?? [

@@ -31,7 +31,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       ),
     );
     _controller.forward();
-    // Navigate to HomeScreen after 3 seconds
     Timer(const Duration(seconds: 3), () {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
@@ -67,7 +66,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       appBar: const PremiumAppBar(title: 'INITIATING'),
       body: Stack(
         children: [
-          // Background Gradient
           Container(
             decoration: const BoxDecoration(
               gradient: RadialGradient(
@@ -80,7 +78,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ),
             ),
           ),
-          // Ambient Glow in Center
           Center(
             child: Container(
               width: 200,
@@ -98,7 +95,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ),
             ),
           ),
-          // Content
           Center(
             child: AnimatedBuilder(
               animation: _controller,
@@ -114,7 +110,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Sleek Animated Ring/Logo
                   Container(
                     width: 90,
                     height: 90,
@@ -149,9 +144,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     ),
                   ),
                   const SizedBox(height: 32),
-                  // App Title with premium letter spacing
                   Text(
-                    'NEXUS LABS',
+                    'QuantNews Labs',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
@@ -170,7 +164,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     ),
                   ),
                   const SizedBox(height: 48),
-                  // Minimal horizontal loading line
                   SizedBox(
                     width: 120,
                     child: LinearProgressIndicator(
