@@ -231,8 +231,8 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
                   const SizedBox(height: 28),
                   AuraHeadline(
                     controller: _textController,
-                    fullText: 'create your account',
-                    highlightPart: 'create',
+                    fullText: '< /create > your account',
+                    highlightPart: '< /create >',
                   ),
                   const SizedBox(height: 16),
                   FadeInOnTextAnimation(

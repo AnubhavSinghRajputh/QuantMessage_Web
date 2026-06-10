@@ -230,8 +230,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   const SizedBox(height: 28),
                   AuraHeadline(
                     controller: _textController,
-                    fullText: 'sign in to quantnews',
-                    highlightPart: 'sign in',
+                    fullText: '< /sign_in > to QUANTNEWS',
+                    highlightPart: '< /sign_in >',
                   ),
                   const SizedBox(height: 16),
                   FadeInOnTextAnimation(
