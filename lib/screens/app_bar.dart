@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -66,18 +65,21 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
                               size: 18,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 10), // Slightly reduced for tighter feel
                           Text(
                             title,
                             style: TextStyle(
+                              // MODIFIED: Using Inter/Montserrat for Antigravity look
+                              fontFamily: 'Inter',
                               color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 4.0,
+                              fontSize: 17, // Slightly increased size for impact
+                              fontWeight: FontWeight.w900, // Extra bold
+                              // MODIFIED: Decreased from 4.0 to 1.2 for a tighter, modern look
+                              letterSpacing: 1.2,
                               shadows: [
                                 Shadow(
-                                  color: Colors.white.withOpacity(0.3),
-                                  blurRadius: 10,
+                                  color: Colors.white.withOpacity(0.2),
+                                  blurRadius: 12,
                                 ),
                               ],
                             ),

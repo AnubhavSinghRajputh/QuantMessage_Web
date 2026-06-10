@@ -6,6 +6,7 @@ import '../app_bar.dart';
 import '../home_screen.dart';
 import '../premium_effects.dart';
 import 'signup_page.dart';
+import 'google_signin_page.dart'; // Import the Google portal page
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -59,6 +60,15 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => const SignupPage(),
+      ),
+    );
+  }
+
+  // NEW: Navigation to the dedicated Google Sign-In page
+  void _goToGoogleSigninPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const GoogleSigninPage(),
       ),
     );
   }
@@ -278,6 +288,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     ),
                   ),
                   const SizedBox(height: 24),
+
+                  // PRIMARY SIGN IN BUTTON
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: AuraButton(
@@ -317,7 +329,65 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
+
+                  // --- NEW: Glassy Grey Divider ---
+                  FadeInOnTextAnimation(
+                    controller: _textController,
+                    child: Row(
+                      children: [
+                        Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            'OR',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.2),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w300,
+                              letterSpacing: 2.0,
+                            ),
+                          ),
+                        ),
+                        Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // --- NEW: Grey Glass Google Button ---
+                  FadeInOnTextAnimation(
+                    controller: _textController,
+                    child: AuraButton(
+                      onPressed: _goToGoogleSigninPage,
+                      outlined: true, // Glass effect
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.grey[300],
+                        side: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.g_mobiledata, size: 18, color: Colors.white),
+                          const SizedBox(width: 8),
+                          Text(
+                            'continue with google',
+                            style: TextStyle(
+                              color: Colors.grey[300],
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: TextButton(
