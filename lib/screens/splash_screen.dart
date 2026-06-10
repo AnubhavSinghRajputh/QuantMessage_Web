@@ -145,7 +145,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   ),
                   const SizedBox(height: 32),
                   Text(
-                    'QuantNews Labs',
+                    'ALGONEWS Labs',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,

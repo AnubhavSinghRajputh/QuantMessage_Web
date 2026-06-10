@@ -59,7 +59,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Please enter both email and password.',
+            'Please enter both email and passcode.',
             style: TextStyle(color: Colors.white.withOpacity(0.9)),
           ),
           backgroundColor: const Color(0xFF1A1A1F),
@@ -135,7 +135,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         ),
         const SizedBox(width: 12),
         Text(
-          'QUANTNEWS',
+          'ALGONEWS',
           style: TextStyle(
             color: Colors.white,
             fontSize: 16,
@@ -222,7 +222,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     controller: _textController,
                     child: _buildInputField(
                       controller: _passwordController,
-                      hintText: 'Password',
+                      hintText: 'Passcode',
                       keyboardType: TextInputType.visiblePassword,
                       obscureText: _obscurePassword,
                       suffixIcon: IconButton(
@@ -287,7 +287,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     child: TextButton(
                       onPressed: () {},
                       child: Text(
-                        'Forgot password?',
+                        'Forgot passcode?',
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.35),
                           fontSize: 13,
