@@ -4,9 +4,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/auth_service.dart';
 import '../app_bar.dart';
 import '../premium_effects.dart';
+import '../transition_animations.dart'; // PREMIUM TRANSITIONS
 import 'login_page.dart';
 import 'google_signin_page.dart';
-import 'github_regis_page.dart'; // <--- IMPORTED GITHUB PAGE
+import 'github_regis_page.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({Key? key}) : super(key: key);
@@ -61,28 +62,23 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  // --- UPDATED NAVIGATION WITH PREMIUM TRANSITIONS ---
+
   void _goToLoginPage() {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const LoginPage(),
-      ),
+      PremiumTransitions.slideRight(const LoginPage()), // <--- UPDATED
     );
   }
 
   void _goToGoogleSigninPage() {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const GoogleSigninPage(),
-      ),
+      PremiumTransitions.slideRight(const GoogleSigninPage()), // <--- UPDATED
     );
   }
 
-  // NEW: Navigation to the GitHub Registration Page
   void _goToGitHubPage() {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const GitHubRegisPage(),
-      ),
+      PremiumTransitions.slideRight(const GitHubRegisPage()), // <--- UPDATED
     );
   }
 
@@ -121,8 +117,9 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
 
       _showSnackBar('Account created! You can sign in now.');
 
+      // Use a transition even when replacing the page for a smooth exit
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(builder: (_) => const LoginPage()),
+        PremiumTransitions.slideRight(const LoginPage()), // <--- UPDATED
       );
     } on AuthException catch (e) {
       if (!mounted) return;
@@ -194,7 +191,7 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
         ),
         const SizedBox(width: 12),
         Text(
-          'QUANTNEWS',
+          'QUANTMESSAGE', // <--- UPDATED BRANDING
           style: TextStyle(
             color: Colors.white,
             fontSize: 16,
@@ -257,7 +254,7 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: Text(
-                      'Join QuantNews and get early access to personalised news, insights, and your own workspace.',
+                      'Join QuantMessage and get early access to personalised news, insights, and your own workspace.', // <--- UPDATED
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.35),
@@ -393,7 +390,7 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 20),
 
-                  // --- GITHUB AUTH BUTTON (Orange with Black Bold Text) ---
+                  // --- GITHUB AUTH BUTTON ---
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: AuraButton(
@@ -416,7 +413,7 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
                             style: TextStyle(
                               color: Colors.black,
                               fontSize: 14,
-                              fontWeight: FontWeight.bold, // Bold text
+                              fontWeight: FontWeight.bold,
                               letterSpacing: 1.0,
                             ),
                           ),

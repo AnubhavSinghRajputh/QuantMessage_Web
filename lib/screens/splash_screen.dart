@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app_bar.dart';
-import 'auth_guard.dart'; // <--- IMPORTED AUTH GUARD
+import 'auth_guard.dart';
 import 'premium_effects.dart';
+import 'transition_animations.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -42,16 +43,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     Timer(const Duration(seconds: 4), () {
       if (!mounted) return;
 
-      // Instead of going to HomeScreen, we go to AuthGuard.
-      // AuthGuard will check the Supabase session and decide where to send the user.
+      // Instead of a standard RouteBuilder, we use the Premium zoomFade transition.
+      // This creates a high-impact, cinematic entry into the AuthGuard.
       Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const AuthGuard(), // <--- UPDATED
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 800),
-        ),
+        PremiumTransitions.zoomFade(const AuthGuard()), // <--- UPDATED
       );
     });
   }
@@ -131,7 +126,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
                       // Antigravity Style Text
                       Text(
-                        'QUANTMESSAGE', // Ensure branding is consistent
+                        'QUANTMESSAGE',
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 26,

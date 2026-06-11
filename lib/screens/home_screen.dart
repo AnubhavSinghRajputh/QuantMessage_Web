@@ -5,7 +5,8 @@ import 'premium_effects.dart';
 import 'signup_page/login_page.dart';
 import 'signup_page/signup_page.dart';
 import 'signup_page/google_login_page.dart';
-import 'signup_page/github_regis_page.dart'; // <--- IMPORTED GITHUB PAGE
+import 'signup_page/github_regis_page.dart';
+import 'transition_animations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -49,28 +50,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  // --- UPDATED NAVIGATION WITH PREMIUM TRANSITIONS ---
+
   void _goToLoginPage() {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const LoginPage()),
+      PremiumTransitions.slideRight(const LoginPage()), // <--- UPDATED
     );
   }
 
   void _goToSignupPage() {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const SignupPage()),
+      PremiumTransitions.slideRight(const SignupPage()), // <--- UPDATED
     );
   }
 
   void _goToGoogleLoginPage() {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const GoogleLoginPage()),
+      PremiumTransitions.slideRight(const GoogleLoginPage()), // <--- UPDATED
     );
   }
 
-  // NEW: Navigation to the GitHub Registration Page
   void _goToGitHubPage() {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const GitHubRegisPage()),
+      PremiumTransitions.slideRight(const GitHubRegisPage()), // <--- UPDATED
     );
   }
 
@@ -214,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 20),
 
-                  // --- ADDED: Glassy Grey Divider ---
+                  // Glassy Grey Divider
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: Row(
@@ -238,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 20),
 
-                  // 3. GITHUB AUTH BUTTON (Orange with Black Bold Text)
+                  // 3. GITHUB AUTH BUTTON
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: AuraButton(

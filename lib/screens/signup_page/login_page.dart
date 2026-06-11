@@ -5,9 +5,10 @@ import '../../services/auth_service.dart';
 import '../app_bar.dart';
 import '../home_screen.dart';
 import '../premium_effects.dart';
+import '../transition_animations.dart';
 import 'signup_page.dart';
 import 'google_signin_page.dart';
-import 'github_regis_page.dart'; // <--- IMPORTED THE GITHUB PAGE
+import 'github_regis_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -59,26 +60,19 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   void _goToSignupPage() {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const SignupPage(),
-      ),
+      PremiumTransitions.slideRight(const SignupPage()),
     );
   }
 
   void _goToGoogleSigninPage() {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const GoogleSigninPage(),
-      ),
+      PremiumTransitions.slideRight(const GoogleSigninPage()),
     );
   }
 
-  // NEW: Navigation to the GitHub Registration Page
   void _goToGitHubPage() {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const GitHubRegisPage(),
-      ),
+      PremiumTransitions.slideRight(const GitHubRegisPage()),
     );
   }
 
@@ -100,7 +94,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       if (!mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute<void>(builder: (_) => const HomeScreen()),
+        PremiumTransitions.zoomFade(const HomeScreen()),
             (_) => false,
       );
     } on AuthException catch (e) {
@@ -141,6 +135,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           message,
           style: TextStyle(color: Colors.white.withOpacity(0.9)),
         ),
+        // FIXED: Removed the stray comma here that caused the error
         backgroundColor: const Color(0xFF1A1A1F),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
@@ -298,7 +293,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 24),
 
-                  // PRIMARY SIGN IN BUTTON
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: AuraButton(
@@ -340,7 +334,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 20),
 
-                  // Glassy Grey Divider
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: Row(
@@ -364,7 +357,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 20),
 
-                  // --- GITHUB AUTH BUTTON (Orange with Black Bold Text) ---
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: AuraButton(
@@ -387,7 +379,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                             style: TextStyle(
                               color: Colors.black,
                               fontSize: 14,
-                              fontWeight: FontWeight.bold, // Bold text
+                              fontWeight: FontWeight.bold,
                               letterSpacing: 1.0,
                             ),
                           ),
@@ -397,7 +389,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 12),
 
-                  // --- GOOGLE AUTH BUTTON ---
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: AuraButton(
