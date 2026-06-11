@@ -82,7 +82,7 @@ class _GitHubRegisPageState extends State<GitHubRegisPage> with TickerProviderSt
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // --- STATUS TAG ---
+                  //  STATUS TAG
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
@@ -102,7 +102,7 @@ class _GitHubRegisPageState extends State<GitHubRegisPage> with TickerProviderSt
                   ),
                   const SizedBox(height: 32),
 
-                  // --- PREMIUM TYPING HEADLINE ---
+                  //  PREMIUM TYPING HEADLINE
                   // This uses the AuraHeadline + TypingTextAnimation from your effects file
                   AuraHeadline(
                     controller: _textController,
@@ -112,7 +112,7 @@ class _GitHubRegisPageState extends State<GitHubRegisPage> with TickerProviderSt
                   ),
                   const SizedBox(height: 16),
 
-                  // --- FADE-IN DESCRIPTION ---
+                  //  FADE-IN DESCRIPTION
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: Text(
@@ -128,7 +128,7 @@ class _GitHubRegisPageState extends State<GitHubRegisPage> with TickerProviderSt
                   ),
                   const SizedBox(height: 50),
 
-                  // --- PREMIUM AUTHORIZATION BUTTON ---
+                  //  AUTHORIZATION BUTTON
                   // This uses the AuraButton with the CirculatingAura border
                   FadeInOnTextAnimation(
                     controller: _textController,
@@ -154,7 +154,7 @@ class _GitHubRegisPageState extends State<GitHubRegisPage> with TickerProviderSt
                   ),
                   const SizedBox(height: 20),
 
-                  // --- BACK BUTTON ---
+                  // BACK BUTTON
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: TextButton(
