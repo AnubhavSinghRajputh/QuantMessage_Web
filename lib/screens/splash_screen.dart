@@ -127,7 +127,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
                       // Antigravity Style Text
                       Text(
-                        'QUANTNEWS ',
+                        'QUANTMESSAGE ',
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 26,

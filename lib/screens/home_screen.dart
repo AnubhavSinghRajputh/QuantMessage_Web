@@ -4,7 +4,8 @@ import 'app_bar.dart';
 import 'premium_effects.dart';
 import 'signup_page/login_page.dart';
 import 'signup_page/signup_page.dart';
-import 'signup_page/google_login_page.dart'; // Import the new dedicated page
+import 'signup_page/google_login_page.dart';
+import 'signup_page/github_regis_page.dart'; // <--- IMPORTED GITHUB PAGE
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -17,7 +18,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _bgController;
   late AnimationController _textController;
 
-  // Added controller for the access code field
   final TextEditingController _accessCodeController = TextEditingController();
 
   @override
@@ -61,10 +61,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  // NEW: Navigate to the dedicated Google Login Page
   void _goToGoogleLoginPage() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => const GoogleLoginPage()),
+    );
+  }
+
+  // NEW: Navigation to the GitHub Registration Page
+  void _goToGitHubPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const GitHubRegisPage()),
     );
   }
 
@@ -206,14 +212,78 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: _buildButtonContent('create', Icons.person_add_outlined),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 20),
 
-                  // 3. GOOGLE AUTH BUTTON (Now navigates to GoogleLoginPage)
+                  // --- ADDED: Glassy Grey Divider ---
+                  FadeInOnTextAnimation(
+                    controller: _textController,
+                    child: Row(
+                      children: [
+                        Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            'OR',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.2),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w300,
+                              letterSpacing: 2.0,
+                            ),
+                          ),
+                        ),
+                        Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // 3. GITHUB AUTH BUTTON (Orange with Black Bold Text)
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: AuraButton(
-                      onPressed: _goToGoogleLoginPage, // Changed to navigate to dedicated page
+                      onPressed: _goToGitHubPage,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.black,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.code, size: 18, color: Colors.black),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'continue with github',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 4. GOOGLE AUTH BUTTON
+                  FadeInOnTextAnimation(
+                    controller: _textController,
+                    child: AuraButton(
+                      onPressed: _goToGoogleLoginPage,
                       outlined: true,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.grey[300],
+                        side: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -240,7 +310,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  // Helper to keep the UI clean and consistent
   Widget _buildButtonContent(String text, IconData icon) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,

@@ -6,7 +6,8 @@ import '../app_bar.dart';
 import '../home_screen.dart';
 import '../premium_effects.dart';
 import 'signup_page.dart';
-import 'google_signin_page.dart'; // Import the Google portal page
+import 'google_signin_page.dart';
+import 'github_regis_page.dart'; // <--- IMPORTED THE GITHUB PAGE
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -64,11 +65,19 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
-  // NEW: Navigation to the dedicated Google Sign-In page
   void _goToGoogleSigninPage() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => const GoogleSigninPage(),
+      ),
+    );
+  }
+
+  // NEW: Navigation to the GitHub Registration Page
+  void _goToGitHubPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const GitHubRegisPage(),
       ),
     );
   }
@@ -184,7 +193,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         ),
         const SizedBox(width: 12),
         Text(
-          'QUANTNEWS',
+          'QUANTMESSAGE',
           style: TextStyle(
             color: Colors.white,
             fontSize: 16,
@@ -240,7 +249,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   const SizedBox(height: 28),
                   AuraHeadline(
                     controller: _textController,
-                    fullText: '< /sign_in > to QUANTNEWS',
+                    fullText: '< /sign_in > to QUANTMESSAGE',
                     highlightPart: '< /sign_in >',
                   ),
                   const SizedBox(height: 16),
@@ -331,7 +340,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 20),
 
-                  // --- NEW: Glassy Grey Divider ---
+                  // Glassy Grey Divider
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: Row(
@@ -355,12 +364,45 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 20),
 
-                  // --- NEW: Grey Glass Google Button ---
+                  // --- GITHUB AUTH BUTTON (Orange with Black Bold Text) ---
+                  FadeInOnTextAnimation(
+                    controller: _textController,
+                    child: AuraButton(
+                      onPressed: _goToGitHubPage,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.black,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.code, size: 18, color: Colors.black),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'continue with github',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold, // Bold text
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // --- GOOGLE AUTH BUTTON ---
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: AuraButton(
                       onPressed: _goToGoogleSigninPage,
-                      outlined: true, // Glass effect
+                      outlined: true,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.grey[300],
                         side: BorderSide(color: Colors.grey.withOpacity(0.2)),

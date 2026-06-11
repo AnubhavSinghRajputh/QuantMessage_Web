@@ -5,7 +5,8 @@ import '../../services/auth_service.dart';
 import '../app_bar.dart';
 import '../premium_effects.dart';
 import 'login_page.dart';
-import 'google_signin_page.dart'; // Import the Google Sign-In page
+import 'google_signin_page.dart';
+import 'github_regis_page.dart'; // <--- IMPORTED GITHUB PAGE
 
 class SignupPage extends StatefulWidget {
   const SignupPage({Key? key}) : super(key: key);
@@ -68,11 +69,19 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
     );
   }
 
-  // NEW: Navigate to the Google Sign-In portal
   void _goToGoogleSigninPage() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => const GoogleSigninPage(),
+      ),
+    );
+  }
+
+  // NEW: Navigation to the GitHub Registration Page
+  void _goToGitHubPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const GitHubRegisPage(),
       ),
     );
   }
@@ -360,7 +369,7 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 20),
 
-                  // --- NEW: Glassy Grey Divider ---
+                  // Glassy Grey Divider
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: Row(
@@ -384,12 +393,45 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 20),
 
-                  // --- NEW: Grey Glass Google Button ---
+                  // --- GITHUB AUTH BUTTON (Orange with Black Bold Text) ---
+                  FadeInOnTextAnimation(
+                    controller: _textController,
+                    child: AuraButton(
+                      onPressed: _goToGitHubPage,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.black,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.code, size: 18, color: Colors.black),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'continue with github',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold, // Bold text
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Grey Glass Google Button
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: AuraButton(
                       onPressed: _goToGoogleSigninPage,
-                      outlined: true, // Enables the glass/outline effect
+                      outlined: true,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.grey[300],
                         side: BorderSide(color: Colors.grey.withOpacity(0.2)),
