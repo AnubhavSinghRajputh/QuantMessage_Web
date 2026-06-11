@@ -3,10 +3,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Import your screens
 import 'screens/splash_screen.dart';
+import 'screens/auth_guard.dart'; // <--- IMPORTED THE AUTH GUARD
 
 Future<void> main() async {
   // 1. Ensure Flutter bindings are initialized for async setup
-  // This is critical when using Supabase.initialize()
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
@@ -21,16 +21,16 @@ Future<void> main() async {
     debugPrint("Error initializing Supabase: $e");
   }
 
-  runApp(const QuantNewsApp());
+  runApp(const QuantMessageApp()); // <--- UPDATED CLASS NAME
 }
 
-class QuantNewsApp extends StatelessWidget {
-  const QuantNewsApp({super.key});
+class QuantMessageApp extends StatelessWidget { // <--- UPDATED CLASS NAME
+  const QuantMessageApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'QuantNews',
+      title: 'QuantMessage', // <--- UPDATED BRAND NAME
       debugShowCheckedModeBanner: false,
 
       // --- PREMIUM THEME CONFIGURATION ---
@@ -48,10 +48,12 @@ class QuantNewsApp extends StatelessWidget {
         ),
       ),
 
-      // The SplashScreen is the brain of the app.
-      // It should check if a Supabase session exists:
-      // If session != null -> Go to Dashboard
-      // If session == null -> Go to Home/Login
+      /*
+        LOGIC FLOW:
+        We start with the SplashScreen for branding.
+        The SplashScreen should then navigate to the AuthGuard.
+        The AuthGuard then decides whether to show the HomeScreen or Dashboard.
+      */
       home: const SplashScreen(),
     );
   }
