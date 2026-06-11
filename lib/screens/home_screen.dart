@@ -262,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             'continue with github',
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 14,
+                              fontSize: 17,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.0,
                             ),

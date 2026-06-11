@@ -146,7 +146,7 @@ class _GoogleSigninPageState extends State<GoogleSigninPage> with TickerProvider
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: Text(
-                      'Securely link your Google identity to QuantNews. You will be redirected to the official Google authorization server.',
+                      'Securely link your Google identity to QuantMessage. You will be redirected to the official Google authorization server.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.35),
