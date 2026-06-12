@@ -80,7 +80,7 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
                         ],
                       ),
 
-                  // --- 2. CENTER SECTION: PREMIUM DROPDOWNS ---
+                  // --- 2. CENTER SECTION: DESKTOP NAVIGATION ---
                   if (!isMobile)
                     Expanded(
                       child: Center(
@@ -89,22 +89,22 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
                           children: [
                             ButtonBulge(
                               child: PremiumDropdown(
-                                label: "ABOUT", // FIXED: Added named parameter
-                                columns: _getAboutColumns(), // FIXED: Added named parameter
+                                label: "ABOUT",
+                                columns: _getAboutColumns(),
                               ),
                             ),
                             const SizedBox(width: 12),
                             ButtonBulge(
                               child: PremiumDropdown(
-                                label: "Platform", // FIXED: Added named parameter
-                                columns: _getPlatformColumns(), // FIXED: Added named parameter
+                                label: "Platform",
+                                columns: _getPlatformColumns(),
                               ),
                             ),
                             const SizedBox(width: 12),
                             ButtonBulge(
                               child: PremiumDropdown(
-                                label: "Pricing", // FIXED: Added named parameter
-                                columns: _getPricingColumns(), // FIXED: Added named parameter
+                                label: "Pricing",
+                                columns: _getPricingColumns(),
                               ),
                             ),
                           ],
@@ -114,7 +114,7 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
                   else
                     const SizedBox.shrink(),
 
-                  // --- 3. RIGHT SECTION: VERSION + HAMBURGER ---
+                  // --- 3. RIGHT SECTION: VERSION + MOBILE MENU ---
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -142,23 +142,28 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
 
                       if (isMobile)
                         ButtonBulge(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.white.withOpacity(0.2)),
-                                ),
-                                child: IconButton(
-                                  icon: const Icon(Icons.menu, color: Colors.white, size: 20),
-                                  onPressed: () => Scaffold.of(context).openDrawer(),
-                                ),
+                          // MODIFIED: Instead of IconButton, we use the PremiumDropdown here
+                          // This gives us the 3D Bulge, the White Capsule, and the 3D-Animated Menu
+                          child: PremiumDropdown(
+                            label: "MENU", // This replaces the 3-lined icon with a professional capsule
+                            columns: [
+                              DropdownColumn(
+                                title: "QUICK LINKS",
+                                items: [
+                                  DropdownItem(title: "About Quant", onTap: () {}),
+                                  DropdownItem(title: "Platform", onTap: () {}),
+                                  DropdownItem(title: "Pricing", onTap: () {}),
+                                  DropdownItem(title: "Support", onTap: () {}),
+                                ],
                               ),
-                            ),
+                              DropdownColumn(
+                                title: "PRODUCTS",
+                                items: [
+                                  DropdownItem(title: "QuantMessage", onTap: () {}),
+                                  DropdownItem(title: "QuantSync", onTap: () {}),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                     ],
@@ -172,7 +177,7 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  // Helper methods for dropdown data
+  // Data Helpers
   List<DropdownColumn> _getAboutColumns() {
     return [
       DropdownColumn(title: "PRODUCTS", items: [DropdownItem(title: "QuantMessage", onTap: () {}), DropdownItem(title: "QuantSync", onTap: () {}), DropdownItem(title: "Windcrest", onTap: () {}),]),

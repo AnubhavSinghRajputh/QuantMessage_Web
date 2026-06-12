@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'dart:math' as math;
 
 class PremiumDropdown extends StatefulWidget {
   final String label;
@@ -17,6 +16,9 @@ class _PremiumDropdownState extends State<PremiumDropdown> {
   OverlayEntry? _overlayEntry;
   bool _isOpen = false;
 
+  // This notifier tells the DropdownContent to start its closing animation
+  final ValueNotifier<bool> _closeNotifier = ValueNotifier(false);
+
   void _toggleMenu() {
     if (_isOpen) {
       _closeMenu();
@@ -26,12 +28,19 @@ class _PremiumDropdownState extends State<PremiumDropdown> {
   }
 
   void _openMenu() {
+    _closeNotifier.value = false; // Reset closing state
     _overlayEntry = _createOverlayEntry();
     Overlay.of(context).insert(_overlayEntry!);
     setState(() => _isOpen = true);
   }
 
   void _closeMenu() {
+    // Instead of removing instantly, we trigger the reverse animation
+    _closeNotifier.value = true;
+  }
+
+  // This is called by the _DropdownContent once the reverse animation finishes
+  void _onAnimationFinished() {
     _overlayEntry?.remove();
     _overlayEntry = null;
     setState(() => _isOpen = false);
@@ -41,27 +50,23 @@ class _PremiumDropdownState extends State<PremiumDropdown> {
     return OverlayEntry(
       builder: (context) => Stack(
         children: [
-          // --- GLOBAL BACKGROUND BLUR ---
-          // Blurs the rest of the website when the menu is open
           Positioned.fill(
             child: GestureDetector(
               onTap: _closeMenu,
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-                child: Container(
-                  color: Colors.black.withOpacity(0.2),
-                ),
+                child: Container(color: Colors.black.withOpacity(0.2)),
               ),
             ),
           ),
-          // --- 3D FLOATING MENU ---
           CompositedTransformFollower(
             link: _layerLink,
             showWhenUnlinked: false,
             offset: const Offset(0, 45),
             child: _DropdownContent(
               columns: widget.columns,
-              onItemTapped: () => _closeMenu(),
+              closeNotifier: _closeNotifier,
+              onAnimationComplete: _onAnimationFinished,
             ),
           ),
         ],
@@ -76,17 +81,12 @@ class _PremiumDropdownState extends State<PremiumDropdown> {
       child: GestureDetector(
         onTap: _toggleMenu,
         child: Container(
-          // White Rectangular Capsule Styling
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
+              BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2)),
             ],
           ),
           child: Row(
@@ -94,23 +94,14 @@ class _PremiumDropdownState extends State<PremiumDropdown> {
             children: [
               Text(
                 widget.label,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: const TextStyle(color: Colors.black, fontSize: 13, fontWeight: FontWeight.w600),
               ),
               const SizedBox(width: 6),
-              // Arrow that rotates 180 degrees smoothly
               AnimatedRotation(
                 turns: _isOpen ? 0.5 : 0.0,
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
-                child: const Icon(
-                  Icons.keyboard_arrow_down,
-                  color: Colors.black,
-                  size: 16,
-                ),
+                child: const Icon(Icons.keyboard_arrow_down, color: Colors.black, size: 16),
               ),
             ],
           ),
@@ -120,7 +111,6 @@ class _PremiumDropdownState extends State<PremiumDropdown> {
   }
 }
 
-// DATA MODELS
 class DropdownColumn {
   final String title;
   final List<DropdownItem> items;
@@ -136,8 +126,14 @@ class DropdownItem {
 
 class _DropdownContent extends StatefulWidget {
   final List<DropdownColumn> columns;
-  final VoidCallback onItemTapped;
-  const _DropdownContent({required this.columns, required this.onItemTapped});
+  final ValueNotifier<bool> closeNotifier;
+  final VoidCallback onAnimationComplete;
+
+  const _DropdownContent({
+    required this.columns,
+    required this.closeNotifier,
+    required this.onAnimationComplete,
+  });
 
   @override
   State<_DropdownContent> createState() => _DropdownContentState();
@@ -151,10 +147,31 @@ class _DropdownContentState extends State<_DropdownContent> with SingleTickerPro
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
-    _scaleAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeOutQuint);
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+
+    // Scale from 0.0 (the button) to 1.0 (full size)
+    _scaleAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack, // Gives a professional "bounce" effect
+    );
+
     _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_scaleAnimation);
+
     _controller.forward();
+
+    // Listen for the close signal from the parent
+    widget.closeNotifier.addListener(_handleCloseSignal);
+  }
+
+  void _handleCloseSignal() {
+    if (widget.closeNotifier.value == true) {
+      _controller.reverse().then((_) {
+        widget.onAnimationComplete();
+      });
+    }
   }
 
   @override
@@ -166,14 +183,14 @@ class _DropdownContentState extends State<_DropdownContent> with SingleTickerPro
   @override
   Widget build(BuildContext context) {
     return ScaleTransition(
-      scale: Tween<double>(begin: 0.9, end: 1.0).animate(_scaleAnimation),
+      // STARTING AT 0.0 makes it originate from the point of the button
+      scale: Tween<double>(begin: 0.0, end: 1.0).animate(_scaleAnimation),
       child: FadeTransition(
         opacity: _opacityAnimation,
         child: Material(
           color: Colors.transparent,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            // --- FIXED: IntrinsicWidth wraps the blur and container to size it exactly to content ---
             child: IntrinsicWidth(
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
@@ -189,7 +206,7 @@ class _DropdownContentState extends State<_DropdownContent> with SingleTickerPro
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: widget.columns.map((col) {
                       return SizedBox(
-                        width: 180, // Base width for professional column spacing
+                        width: 180,
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Column(
@@ -197,12 +214,7 @@ class _DropdownContentState extends State<_DropdownContent> with SingleTickerPro
                             children: [
                               Text(
                                 col.title,
-                                style: TextStyle(
-                                    color: Colors.white.withOpacity(0.4),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.0
-                                ),
+                                style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0),
                               ),
                               const SizedBox(height: 12),
                               ...col.items.map((item) => _buildItem(item)),
@@ -225,7 +237,8 @@ class _DropdownContentState extends State<_DropdownContent> with SingleTickerPro
     return InkWell(
       onTap: () {
         item.onTap();
-        widget.onItemTapped();
+        // Trigger the close animation when an item is selected
+        widget.closeNotifier.value = true;
       },
       borderRadius: BorderRadius.circular(8),
       child: Padding(
