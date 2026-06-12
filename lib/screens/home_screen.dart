@@ -8,6 +8,7 @@ import 'signup_page/google_login_page.dart';
 import 'signup_page/github_regis_page.dart';
 import 'transition_animations.dart';
 import 'button_buldge.dart';
+import 'home_animation.dart'; // <--- IMPORT THE SPACE ANIMATION
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -68,104 +69,199 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const PremiumAppBar(),
-      // --- MODIFIED: Removed 'drawer: _buildMobileDrawer()' ---
-      // The navigation is now handled by the PremiumDropdown in the AppBar
-      body: PremiumBackgroundStack(
+      // Using a Stack to layer the Space Animation and the Fluid Effects
+      body: Stack(
+          children: [
+          // LAYER 1: THE DEEP SPACE SIMULATION (Stars, Moon, Planets)
+          const HomeAnimation(),
+
+      // LAYER 2: THE PREMIUM FLUID MESH & DOTS (Adds depth and glow)
+      // We wrap it in a Transparent container so the planets are visible beneath it
+      PremiumBackgroundStack(
         bgController: _bgController,
         showMovingDots: true,
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.04), borderRadius: BorderRadius.circular(30), border: Border.all(color: Colors.white.withOpacity(0.1))),
-                    child: const Text('SYSTEM ONLINE', style: TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 2.0)),
+        showFluidMesh: true,
+        baseColor: Colors.transparent, // Important: Make transparent to see space
+        child: const SizedBox.expand(),
+      ),
+
+      // LAYER 3: THE CONTENT
+      SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // --- HERO SECTION ---
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.85,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.04),
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(color: Colors.white.withOpacity(0.1)),
+                          ),
+                          child: const Text(
+                            'SYSTEM ONLINE',
+                            style: TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 2.0),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        FadeInOnTextAnimation(
+                          controller: _textController,
+                          child: Text(
+                            '< Coming very soon >\n< stay tuned >',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: '__copernicus_669e4a',
+                              color: Colors.white,
+                              fontSize: 56,
+                              fontWeight: FontWeight.w800,
+                              height: 1.1,
+                              letterSpacing: -1.0,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        FadeInOnTextAnimation(
+                          controller: _textController,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 40),
+                            child: Text(
+                              'We are crafting something extraordinary. Join the next-gen agent platform built by Anubhav Singh Rajput.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.4),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w300,
+                                height: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 48),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ButtonBulge(
+                              child: AuraButton(
+                                onPressed: _goToLoginPage,
+                                auraController: _bgController,
+                                child: _buildButtonContent('sign in', Icons.arrow_forward),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            ButtonBulge(
+                              child: AuraButton(
+                                onPressed: _goToSignupPage,
+                                outlined: true,
+                                auraController: _bgController,
+                                child: _buildButtonContent('create', Icons.person_add_outlined),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 28),
-                  AuraHeadline(controller: _textController, fullText: '< coming very soon > stay tuned', highlightPart: '< coming very soon >', auraController: _bgController),
-                  const SizedBox(height: 16),
-                  FadeInOnTextAnimation(
-                    controller: _textController,
-                    child: Text('We are crafting something extraordinary. Enter your key to pre-register. built by Anubhav Singh Rajput', textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 13, fontWeight: FontWeight.w300, letterSpacing: 0.5)),
-                  ),
-                  const SizedBox(height: 40),
-                  FadeInOnTextAnimation(
-                    controller: _textController,
-                    child: Container(
-                      width: 320, height: 52,
-                      decoration: BoxDecoration(color: Colors.white.withOpacity(0.02), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.white.withOpacity(0.08))),
-                      child: Row(
+                ),
+
+                // --- SECOND SECTION: ACCESS CODE ---
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 24),
+                  child: Column(
+                    children: [
+                      const Text(
+                        "< Early Access >",
+                        style: TextStyle(color: Colors.white, fontSize: 56, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        "Register to recieve Beta version updates .",
+                        style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14),
+                      ),
+                      const SizedBox(height: 30),
+                      FadeInOnTextAnimation(
+                        controller: _textController,
+                        child: Container(
+                          width: 320,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.02),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white.withOpacity(0.08)),
+                          ),
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: TextField(
+                                  controller: _accessCodeController,
+                                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                                  decoration: InputDecoration(
+                                    hintText: 'Enter access code...',
+                                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.2), fontSize: 13),
+                                    border: InputBorder.none,
+                                  ),
+                                ),
+                              ),
+                              ButtonBulge(
+                                child: Container(
+                                  margin: const EdgeInsets.all(4.0),
+                                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.arrow_forward, color: Colors.black, size: 18),
+                                    onPressed: _handleAccessCode,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 60),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(width: 16),
-                          Expanded(child: TextField(controller: _accessCodeController, style: const TextStyle(color: Colors.white, fontSize: 13, letterSpacing: 1.0), decoration: InputDecoration(hintText: 'Enter access code...', hintStyle: TextStyle(color: Colors.white.withOpacity(0.2), fontSize: 13), border: InputBorder.none))),
                           ButtonBulge(
-                            child: Container(
-                              margin: const EdgeInsets.all(4.0),
-                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-                              child: IconButton(icon: const Icon(Icons.arrow_forward, color: Colors.black, size: 18), onPressed: _handleAccessCode),
+                            child: AuraButton(
+                              onPressed: _goToGitHubPage,
+                              auraController: _bgController,
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.black, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.code, size: 18, color: Colors.black), const SizedBox(width: 8), const Text('GitHub', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold))]),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          ButtonBulge(
+                            child: AuraButton(
+                              onPressed: _goToGoogleLoginPage,
+                              outlined: true,
+                              auraController: _bgController,
+                              style: OutlinedButton.styleFrom(foregroundColor: Colors.grey[300], side: BorderSide(color: Colors.grey.withOpacity(0.2)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.g_mobiledata, size: 18, color: Colors.white), const SizedBox(width: 8), const Text('Google', style: TextStyle(fontWeight: FontWeight.w600))]),
                             ),
                           ),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 100),
+                    ],
                   ),
-                  const SizedBox(height: 24),
-                  FadeInOnTextAnimation(
-                    controller: _textController,
-                    child: ButtonBulge(child: AuraButton(onPressed: _goToLoginPage, auraController: _bgController, child: _buildButtonContent('sign in', Icons.arrow_forward))),
-                  ),
-                  const SizedBox(height: 12),
-                  FadeInOnTextAnimation(
-                    controller: _textController,
-                    child: ButtonBulge(child: AuraButton(onPressed: _goToSignupPage, outlined: true, auraController: _bgController, child: _buildButtonContent('create', Icons.person_add_outlined))),
-                  ),
-                  const SizedBox(height: 20),
-                  FadeInOnTextAnimation(
-                    controller: _textController,
-                    child: Row(
-                      children: [
-                        Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
-                        Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: Text('OR', style: TextStyle(color: Colors.white.withOpacity(0.2), fontSize: 10, fontWeight: FontWeight.w300, letterSpacing: 2.0))),
-                        Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  FadeInOnTextAnimation(
-                    controller: _textController,
-                    child: ButtonBulge(
-                      child: AuraButton(
-                        onPressed: _goToGitHubPage,
-                        auraController: _bgController,
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.black, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.code, size: 18, color: Colors.black), const SizedBox(width: 8), const Text('continue with github', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.0))]),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  FadeInOnTextAnimation(
-                    controller: _textController,
-                    child: ButtonBulge(
-                      child: AuraButton(
-                        onPressed: _goToGoogleLoginPage,
-                        outlined: true,
-                        auraController: _bgController,
-                        style: OutlinedButton.styleFrom(foregroundColor: Colors.grey[300], side: BorderSide(color: Colors.grey.withOpacity(0.2)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.g_mobiledata, size: 18, color: Colors.white), const SizedBox(width: 8), const Text('continue with google', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, letterSpacing: 1.0))]),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
       ),
+    ),
+    ),
     );
   }
 
