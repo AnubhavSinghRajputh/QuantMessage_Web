@@ -16,7 +16,7 @@ class _PremiumDropdownState extends State<PremiumDropdown> {
   OverlayEntry? _overlayEntry;
   bool _isOpen = false;
 
-  // This notifier tells the DropdownContent to start its closing animation
+
   final ValueNotifier<bool> _closeNotifier = ValueNotifier(false);
 
   void _toggleMenu() {
@@ -28,18 +28,18 @@ class _PremiumDropdownState extends State<PremiumDropdown> {
   }
 
   void _openMenu() {
-    _closeNotifier.value = false; // Reset closing state
+    _closeNotifier.value = false; // ye closing state ko reset karne ke kaam ata hai
     _overlayEntry = _createOverlayEntry();
     Overlay.of(context).insert(_overlayEntry!);
     setState(() => _isOpen = true);
   }
 
   void _closeMenu() {
-    // Instead of removing instantly, we trigger the reverse animation
+    // instant removal ki jagah oe ham animation ko trigger kar dte hainn
     _closeNotifier.value = true;
   }
 
-  // This is called by the _DropdownContent once the reverse animation finishes
+  // ye tab call hota hai jab reveerse animation tigerr hoti hai
   void _onAnimationFinished() {
     _overlayEntry?.remove();
     _overlayEntry = null;
@@ -152,17 +152,17 @@ class _DropdownContentState extends State<_DropdownContent> with SingleTickerPro
       duration: const Duration(milliseconds: 350),
     );
 
-    // Scale from 0.0 (the button) to 1.0 (full size)
+    // scale of button is 1.0 that represts full size
     _scaleAnimation = CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeOutBack, // Gives a professional "bounce" effect
+      curve: Curves.easeOutBack, // bounce effect
     );
 
     _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_scaleAnimation);
 
     _controller.forward();
 
-    // Listen for the close signal from the parent
+
     widget.closeNotifier.addListener(_handleCloseSignal);
   }
 
@@ -183,7 +183,7 @@ class _DropdownContentState extends State<_DropdownContent> with SingleTickerPro
   @override
   Widget build(BuildContext context) {
     return ScaleTransition(
-      // STARTING AT 0.0 makes it originate from the point of the button
+
       scale: Tween<double>(begin: 0.0, end: 1.0).animate(_scaleAnimation),
       child: FadeTransition(
         opacity: _opacityAnimation,
@@ -237,7 +237,7 @@ class _DropdownContentState extends State<_DropdownContent> with SingleTickerPro
     return InkWell(
       onTap: () {
         item.onTap();
-        // Trigger the close animation when an item is selected
+        // trigger close animation
         widget.closeNotifier.value = true;
       },
       borderRadius: BorderRadius.circular(8),

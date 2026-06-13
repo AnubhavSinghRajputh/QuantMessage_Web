@@ -186,8 +186,8 @@ class GitHubLogoPainter extends CustomPainter {
 
     final Path tail = Path();
     tail.moveTo(12, 25.5);
-    tail.cubicTo(7.5, 26.5, 5, 24, 4.5, 22.5); // Outer tip curve
-    tail.quadraticBezierTo(5.5, 23.5, 7.5, 24.5); // Inside curve back
+    tail.cubicTo(7.5, 26.5, 5, 24, 4.5, 22.5);
+    tail.quadraticBezierTo(5.5, 23.5, 7.5, 24.5);
     tail.quadraticBezierTo(9.5, 25, 12, 25.5);
     tail.close();
 

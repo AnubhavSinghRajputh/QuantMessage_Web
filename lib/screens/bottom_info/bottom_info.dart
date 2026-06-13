@@ -1,8 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-/// A premium, Claude-inspired bottom information/footer panel for QuantMessage.
-/// Drop this widget into any scrollable column to show it when the user scrolls down.
 class BottomInfoPanel extends StatelessWidget {
   const BottomInfoPanel({Key? key}) : super(key: key);
 
@@ -22,10 +20,10 @@ class BottomInfoPanel extends StatelessWidget {
     child: Column(
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
-    // ── FEATURE HIGHLIGHTS STRIP
+    // highlight stripp
     _FeatureStrip(isMobile: isMobile),
 
-    // ── MAIN FOOTER BODY
+    // foother body
     Padding(
     padding: EdgeInsets.symmetric(
     vertical: isMobile ? 48 : 72,
@@ -50,14 +48,14 @@ class BottomInfoPanel extends StatelessWidget {
     ),
     ),
 
-    // ── DIVIDER ────────────────────────────────────────────────────────
+    // divider
     Container(
     margin: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 72),
     height: 1,
     color: const Color(0x0DFFFFFF),
     ),
 
-    // ── BOTTOM BAR ─────────────────────────────────────────────────────
+    // bottom bar
     _BottomBar(isMobile: isMobile),
     ],
     ),
@@ -65,9 +63,8 @@ class BottomInfoPanel extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FEATURE HIGHLIGHT STRIP
-// ─────────────────────────────────────────────────────────────────────────────
+
+// highlight strip
 
 class _FeatureStrip extends StatelessWidget {
   final bool isMobile;
@@ -164,9 +161,7 @@ class _FeaturePillState extends State<_FeaturePill> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // BRAND SECTION
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _BrandSection extends StatelessWidget {
   const _BrandSection();
@@ -176,7 +171,7 @@ class _BrandSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Logo row
+        // Logo row section
         Row(
           children: [
             SizedBox(
@@ -299,7 +294,6 @@ class _StatusBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Pulsing dot
           _PulsingDot(),
           const SizedBox(width: 8),
           const Text(
@@ -370,9 +364,8 @@ class _PulsingDotState extends State<_PulsingDot>
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // FOOTER LINKS GRID
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _FooterLinksGrid extends StatelessWidget {
   final bool isMobile;
@@ -536,9 +529,9 @@ class _FooterLinkState extends State<_FooterLink> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // BOTTOM BAR
-// ─────────────────────────────────────────────────────────────────────────────
+
 
 class _BottomBar extends StatelessWidget {
   final bool isMobile;
@@ -650,9 +643,8 @@ class _LegalLinkState extends State<_LegalLink> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // SUPPORTING WIDGETS
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// A minimal GitHub-style octacat icon drawn as a custom painter.
 class _GithubIcon extends StatelessWidget {
@@ -692,7 +684,7 @@ class _GithubIconPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// The QuantMessage logo — a stylized Q/quantum node with radiating lines.
+
 class _QMLogoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -717,7 +709,7 @@ class _QMLogoPainter extends CustomPainter {
     final dotPaint = Paint()..color = const Color(0xFFD4CFFF);
     canvas.drawCircle(Offset(cx, cy), r * 0.18, dotPaint);
 
-    // 6 radiating spokes
+
     final spokePaint = Paint()
       ..color = const Color(0x99A89CFF)
       ..strokeWidth = 1.2
@@ -731,7 +723,7 @@ class _QMLogoPainter extends CustomPainter {
         Offset(cx + outerR * math.cos(angle), cy + outerR * math.sin(angle)),
         spokePaint,
       );
-      // Outer node dots
+
       canvas.drawCircle(
         Offset(cx + outerR * math.cos(angle), cy + outerR * math.sin(angle)),
         r * 0.08,

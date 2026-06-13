@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import '../premium_effects.dart';
 
-/// Data model for a single FAQ entry.
+
 class FAQItem {
   final String question;
   final String answer;
   const FAQItem({required this.question, required this.answer});
 }
 
-/// A premium, animated FAQ screen styled to match `premium_themes.dart`.
-///
-/// - Single-open accordion behaviour: tapping a question collapses any
-///   previously open answer and opens the new one (only one at a time).
-/// - Smooth expand/collapse via [AnimatedAlign] + [AnimatedOpacity] + animated icon fade.
-/// - Subtle fade + slide entry animation when the screen is pushed.
+
+
+
+
+/// subtle animation when fade is pressed and slide animation
 class FrequentlyAskedScreen extends StatefulWidget {
   const FrequentlyAskedScreen({Key? key}) : super(key: key);
 
@@ -242,7 +241,7 @@ class _FrequentlyAskedScreenState extends State<FrequentlyAskedScreen>
               ),
             ),
           ),
-          // Animated answer reveal.
+          // Animated answer pannel
           ClipRect(
             child: AnimatedAlign(
               alignment: Alignment.topLeft,

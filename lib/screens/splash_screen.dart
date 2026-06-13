@@ -46,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       // Instead of a standard RouteBuilder, we use the Premium zoomFade transition.
       // This creates a high-impact, cinematic entry into the AuthGuard.
       Navigator.of(context).pushReplacement(
-        PremiumTransitions.zoomFade(const AuthGuard()), // <--- UPDATED
+        PremiumTransitions.zoomFade(const AuthGuard()),
       );
     });
   }
@@ -68,7 +68,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         child: SafeArea(
           child: Stack(
             children: [
-              // 1. INFINITY GLASS ANIMATION LAYER
+              // 1. INFINITE GLASS ANIMATION LAYER
               AnimatedBuilder(
                 animation: _controller,
                 builder: (context, child) {
@@ -97,7 +97,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Central Core - Polished Glass Look
+                      // Central Core - Polished Glass
                       Container(
                         width: 80,
                         height: 80,
@@ -124,7 +124,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       ),
                       const SizedBox(height: 40),
 
-                      // Antigravity Style Text
+                      //GOOGLE FONTS
                       Text(
                         'QUANTMESSAGE',
                         style: TextStyle(
@@ -157,7 +157,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   }
 }
 
-/// CUSTOM PAINTER: The Moving Infinity Glass Loop
+
 class InfinityGlassPainter extends CustomPainter {
   final double progress;
   InfinityGlassPainter({required this.progress});

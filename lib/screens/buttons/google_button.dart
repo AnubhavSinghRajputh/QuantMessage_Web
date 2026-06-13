@@ -187,24 +187,24 @@ class GoogleRingsPainter extends CustomPainter {
     ringPaint.color = const Color(0xFF4285F4);
     canvas.drawCircle(blueCenter, ringRadius, ringPaint);
 
-    // 4. Green
+
     ringPaint.color = const Color(0xFF34A853);
     canvas.drawCircle(greenCenter, ringRadius, ringPaint);
 
-    // Draw crosshair lines
+
     final linePaint = Paint()
       ..color = Colors.black.withOpacity(0.8)
       ..strokeWidth = 0.7
       ..style = PaintingStyle.stroke;
 
-    // Horizontal line
+
     canvas.drawLine(
       localCenter + const Offset(-18, 0),
       localCenter + const Offset(18, 0),
       linePaint,
     );
 
-    // Tilted vertical line (initially tilted ~12 degrees)
+
     const double tiltAngle = 12 * math.pi / 180;
     final double lineLength = 22.0;
 

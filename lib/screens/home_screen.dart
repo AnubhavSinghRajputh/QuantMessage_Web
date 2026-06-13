@@ -246,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     ),
 
-                    // --- SECOND SECTION: ACCESS CODE ---
+                    //  SECOND SECTION: writing the ACCESS CODE
                     Container(
                       padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 24),
                       child: Column(

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 
 class PremiumTransitions {
-  /// 1. SLIDE RIGHT TO LEFT
+
   static Route slideRight(Widget page) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionDuration: const Duration(milliseconds: 600),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        // Curve for a "snappy" yet smooth feel
+
         final curve = CurvedAnimation(parent: animation, curve: Curves.easeOutQuint);
 
         return SlideTransition(
           position: Tween<Offset>(
-            begin: const Offset(1.0, 0.0), // Starts from the right
+            begin: const Offset(1.0, 0.0),
             end: Offset.zero,
           ).animate(curve),
           child: FadeTransition(
@@ -24,7 +24,7 @@ class PremiumTransitions {
     );
   }
 
-  /// 2. YE ZOOM & FADE EFFECT KE LIYE
+
   static Route zoomFade(Widget page) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => page,
@@ -43,7 +43,7 @@ class PremiumTransitions {
     );
   }
 
-  /// 3. isse aap SLIDE UP (The "Panel" Entry) kar saktev hain
+
   /// Use this for: Settings, Profile, or special "Quant" Insight popups
   static Route slideUp(Widget page) {
     return PageRouteBuilder(
@@ -66,7 +66,7 @@ class PremiumTransitions {
     );
   }
 
-  /// 4. YE SOFT CROSS-FADE effect
+  /// 4. YE SOFT CROSS-FADE effect ke liye
   static Route softFade(Widget page) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => page,
