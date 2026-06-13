@@ -136,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               child: Padding(
                                 padding: EdgeInsets.symmetric(horizontal: isMobile ? 10 : 40),
                                 child: Text(
-                                  'We are crafting something extraordinary. Join the next-gen agent platform built by Anubhav Singh Rajput.',
+                                  'We are crafting something extraordinary. Join the next-gen agent platform built by Anubhav Singh .',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.4),
