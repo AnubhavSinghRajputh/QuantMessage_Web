@@ -12,6 +12,7 @@ import 'frequently_asked/frequently_asked.dart';
 import 'buttons/google_button.dart';
 import 'buttons/github_button.dart';
 import 'bottom_info/bottom_info.dart';
+import 'animations/messaging_animation.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -291,98 +292,62 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           const SizedBox(height: 12),
                           FadeTransition(
                             opacity: _earlyAccessFadeInAnimation,
-                            child: Column(
-                              children: [
-                                Text(
-                                  "Register to receive Beta version updates.",
-                                  style: TextStyle(
-                                      color: Colors.white.withOpacity(0.4),
-                                      fontSize: 14),
-                                ),
-                                const SizedBox(height: 30),
-                                Container(
-                                  width: isMobile ? screenWidth * 0.8 : 320,
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.02),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                        color:
-                                        Colors.white.withOpacity(0.08)),
-                                  ),
-                                  child: Row(
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final bool mobile = constraints.maxWidth < 1000;
+
+                                if (mobile) {
+                                  return Column(
                                     children: [
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _accessCodeController,
-                                          style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 13),
-                                          decoration: InputDecoration(
-                                            hintText: 'Enter access code...',
-                                            hintStyle: TextStyle(
-                                                color: Colors.white
-                                                    .withOpacity(0.2),
-                                                fontSize: 13),
-                                            border: InputBorder.none,
-                                          ),
-                                        ),
+                                      const SizedBox(
+                                        width: 340,
+                                        height: 480,
+                                        child: MessagingAnimation(),
                                       ),
-                                      ButtonBulge(
-                                        child: Container(
-                                          margin: const EdgeInsets.all(4.0),
-                                          decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                              BorderRadius.circular(12)),
-                                          child: IconButton(
-                                            icon: const Icon(
-                                                Icons.arrow_forward,
-                                                color: Colors.black,
-                                                size: 18),
-                                            onPressed: _handleAccessCode,
-                                          ),
-                                        ),
+
+                                      const SizedBox(height: 40),
+
+                                      _buildEarlyAccessPanel(
+                                        screenWidth,
+                                        isMobile,
                                       ),
                                     ],
+                                  );
+                                }
+
+                                return Center(
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 1100,
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Expanded(
+                                          flex: 4,
+                                          child: Center(
+                                            child: SizedBox(
+                                              width: 340,
+                                              height: 480,
+                                              child: MessagingAnimation(),
+                                            ),
+                                          ),
+                                        ),
+
+                                        const SizedBox(width: 48),
+
+                                        Expanded(
+                                          flex: 5,
+                                          child: _buildEarlyAccessPanel(
+                                            screenWidth,
+                                            isMobile,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 60),
-                                Wrap(
-                                  spacing: 12,
-                                  runSpacing: 12,
-                                  alignment: WrapAlignment.center,
-                                  children: [
-                                    ButtonBulge(
-                                      child: GitHubButton(
-                                        onPressed: _goToGitHubPage,
-                                        width: 150,
-                                        height: 40,
-                                      ),
-                                    ),
-                                    ButtonBulge(
-                                      child: GoogleButton(
-                                        onPressed: _goToGoogleLoginPage,
-                                        width: 150,
-                                        height: 40,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 30),
-                                GestureDetector(
-                                  onTap: _goToFAQPage,
-                                  child: Text(
-                                    "Frequently Asked Questions",
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.6),
-                                      fontSize: 14,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                );
+                              },
                             ),
                           ),
                           const SizedBox(height: 100),
@@ -399,6 +364,113 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildEarlyAccessPanel(
+      double screenWidth,
+      bool isMobile,
+      ) {
+    return Column(
+      children: [
+        Text(
+          "Register to receive Beta version updates.",
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.4),
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 30),
+
+        Container(
+          width: isMobile ? screenWidth * 0.8 : 320,
+          height: 52,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.02),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.08),
+            ),
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextField(
+                  controller: _accessCodeController,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Enter access code...',
+                    hintStyle: TextStyle(
+                      color: Colors.white.withOpacity(0.2),
+                      fontSize: 13,
+                    ),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              ButtonBulge(
+                child: Container(
+                  margin: const EdgeInsets.all(4.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_forward,
+                      color: Colors.black,
+                      size: 18,
+                    ),
+                    onPressed: _handleAccessCode,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 60),
+
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          alignment: WrapAlignment.center,
+          children: [
+            ButtonBulge(
+              child: GitHubButton(
+                onPressed: _goToGitHubPage,
+                width: 150,
+                height: 40,
+              ),
+            ),
+            ButtonBulge(
+              child: GoogleButton(
+                onPressed: _goToGoogleLoginPage,
+                width: 150,
+                height: 40,
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 30),
+
+        GestureDetector(
+          onTap: _goToFAQPage,
+          child: Text(
+            "Frequently Asked Questions",
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.6),
+              fontSize: 14,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
