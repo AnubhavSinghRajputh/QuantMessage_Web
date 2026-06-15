@@ -46,9 +46,7 @@ class OverlaysPanel extends StatefulWidget {
 
 class _OverlaysPanelState extends State<OverlaysPanel>
     with SingleTickerProviderStateMixin {
-  // Scroll-driven reveal tracking
-  final ScrollController _innerScroll = ScrollController();
-  final Set<int> _revealedRows = {0};
+  // All rows revealed with staggered delays as soon as panel mounts
 
   // Hero entry animation
   late final AnimationController _heroCtrl;
@@ -78,7 +76,6 @@ class _OverlaysPanelState extends State<OverlaysPanel>
   @override
   void dispose() {
     _heroCtrl.dispose();
-    _innerScroll.dispose();
     super.dispose();
   }
 
@@ -153,7 +150,7 @@ class _OverlaysPanelState extends State<OverlaysPanel>
           const SizedBox(height: 36),
 
           Text(
-            'Do More With QuantMessaage Tools',
+            'Do more with built-in tools',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily:    '__copernicus_669e4a',
@@ -189,9 +186,9 @@ class _OverlaysPanelState extends State<OverlaysPanel>
       child: Column(
         children: List.generate(rows.length, (rowIdx) {
           return _AnimatedRow(
-            // Reveal progressively; first two rows start visible
-            revealed: rowIdx < 2,
-            delay:    Duration(milliseconds: rowIdx * 60),
+            // All rows reveal with staggered delays once panel mounts
+            revealed: true,
+            delay:    Duration(milliseconds: 120 + rowIdx * 80),
             child: Column(
               children: [
                 _buildRowDivider(),
@@ -404,7 +401,7 @@ class _DocsButtonState extends State<_DocsButton> {
                 style: TextStyle(
                   fontFamily:  'Inter',
                   fontSize:    14,
-                  fontWeight:  FontWeight.w900,
+                  fontWeight:  FontWeight.w500,
                   color: _hovered ? Colors.white : const Color(0xFF0D0D0D),
                   letterSpacing: 0.2,
                 ),
