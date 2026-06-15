@@ -1,3 +1,5 @@
+// lib/screens/home_screen.dart
+
 import 'package:flutter/material.dart';
 import 'app_bar.dart';
 import 'premium_effects.dart';
@@ -14,6 +16,7 @@ import 'buttons/github_button.dart';
 import 'bottom_info/bottom_info.dart';
 import 'animations/messaging_animation.dart';
 import 'animations/computing_animation.dart';
+import 'overlays/overlays_pannel.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -23,44 +26,67 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  // ── Animation controllers ─────────────────────────────────────────────────
   late AnimationController _bgController;
   late AnimationController _textController;
-  late Animation<double> _fadeInAnimation;
+  late Animation<double>   _fadeInAnimation;
 
   late AnimationController _earlyAccessController;
-  late Animation<double> _earlyAccessFadeInAnimation;
+  late Animation<double>   _earlyAccessFadeInAnimation;
 
   late AnimationController _betaTextController;
-  late Animation<double> _betaFadeAnimation;
-  late Animation<double> _betaShimmerAnimation;
+  late Animation<double>   _betaFadeAnimation;
+  late Animation<double>   _betaShimmerAnimation;
 
-  //  Controller for the descriptive text typing animation
   late AnimationController _descriptionController;
 
-  final ScrollController _scrollController = ScrollController();
-  bool _earlyAccessAnimated = false;
-  bool _computingAnimated = false;
-  bool _descriptionAnimated = false; //  the descriptive text
-
+  // ── Scroll & state ────────────────────────────────────────────────────────
+  final ScrollController      _scrollController     = ScrollController();
   final TextEditingController _accessCodeController = TextEditingController();
+
+  bool _earlyAccessAnimated = false;
+  bool _computingAnimated   = false;
+  bool _descriptionAnimated = false;
+  bool _overlayVisible      = false; // tracks when white panel has scrolled in
+
+  // GlobalKey lets us measure where the OverlaysPanel starts in the scroll
+  final GlobalKey _overlayKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    _bgController = AnimationController(vsync: this, duration: const Duration(seconds: 15))..repeat();
 
-    _textController = AnimationController(vsync: this, duration: const Duration(milliseconds: 2200));
-    _fadeInAnimation = CurvedAnimation(parent: _textController, curve: const Interval(0.4, 0.75, curve: Curves.easeOut));
+    _bgController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 15),
+    )..repeat();
 
-    _earlyAccessController = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000));
-    _earlyAccessFadeInAnimation = CurvedAnimation(parent: _earlyAccessController, curve: const Interval(0.4, 0.75, curve: Curves.easeOut));
+    _textController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    );
+    _fadeInAnimation = CurvedAnimation(
+      parent: _textController,
+      curve: const Interval(0.4, 0.75, curve: Curves.easeOut),
+    );
 
-    _betaTextController = AnimationController(vsync: this, duration: const Duration(milliseconds: 2800));
-    _betaFadeAnimation = CurvedAnimation(parent: _betaTextController, curve: const Interval(0.0, 0.45, curve: Curves.easeOut));
+    _earlyAccessController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+    _earlyAccessFadeInAnimation = CurvedAnimation(
+      parent: _earlyAccessController,
+      curve: const Interval(0.4, 0.75, curve: Curves.easeOut),
+    );
+
+    _betaTextController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2800),
+    );
+    _betaFadeAnimation    = CurvedAnimation(parent: _betaTextController, curve: const Interval(0.0, 0.45, curve: Curves.easeOut));
     _betaShimmerAnimation = CurvedAnimation(parent: _betaTextController, curve: Curves.easeInOut);
     _betaTextController.repeat(reverse: true);
 
-    // Initialize Description Controller {Set to 1.5s for "fast" typing of a paragraph}
     _descriptionController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -69,37 +95,39 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _scrollController.addListener(_onScroll);
 
     Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        _textController.forward();
-        _checkScrollPosition();
-      }
+      if (mounted) _textController.forward();
     });
   }
 
   void _onScroll() {
-    if (_scrollController.hasClients) {
-      // Trigger Computing Card and Descriptive Text typing
-      if (_scrollController.offset > 400 && !_computingAnimated) {
-        setState(() {
-          _computingAnimated = true;
-          _descriptionAnimated = true;
-        });
-        _descriptionController.forward();
-      }
-      if (_scrollController.offset > 800 && !_earlyAccessAnimated) {
-        setState(() => _earlyAccessAnimated = true);
-        _earlyAccessController.forward();
-      }
-    }
-  }
+    if (!_scrollController.hasClients) return;
+    final offset = _scrollController.offset;
 
-  void _checkScrollPosition() {
-    if (!mounted) return;
-    final screenHeight = MediaQuery.of(context).size.height;
-    if (_scrollController.offset > 150 || screenHeight > screenHeight * 0.8 + 100) {
-      if (!_earlyAccessAnimated) {
-        setState(() => _earlyAccessAnimated = true);
-        _earlyAccessController.forward();
+    if (offset > 400 && !_computingAnimated) {
+      setState(() {
+        _computingAnimated   = true;
+        _descriptionAnimated = true;
+      });
+      _descriptionController.forward();
+    }
+
+    if (offset > 800 && !_earlyAccessAnimated) {
+      setState(() => _earlyAccessAnimated = true);
+      _earlyAccessController.forward();
+    }
+
+    // Detect when white overlay panel has scrolled into view
+    if (!_overlayVisible) {
+      final ctx = _overlayKey.currentContext;
+      if (ctx != null) {
+        final box = ctx.findRenderObject() as RenderBox?;
+        if (box != null) {
+          final pos = box.localToGlobal(Offset.zero);
+          final sh  = MediaQuery.of(context).size.height;
+          if (pos.dy < sh * 0.95) {
+            setState(() => _overlayVisible = true);
+          }
+        }
       }
     }
   }
@@ -116,11 +144,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  void _goToLoginPage() => Navigator.of(context).push(PremiumTransitions.slideRight(const LoginPage()));
-  void _goToSignupPage() => Navigator.of(context).push(PremiumTransitions.slideRight(const SignupPage()));
+  // ── Navigation ────────────────────────────────────────────────────────────
+  void _goToLoginPage()       => Navigator.of(context).push(PremiumTransitions.slideRight(const LoginPage()));
+  void _goToSignupPage()      => Navigator.of(context).push(PremiumTransitions.slideRight(const SignupPage()));
   void _goToGoogleLoginPage() => Navigator.of(context).push(PremiumTransitions.slideRight(const GoogleLoginPage()));
-  void _goToGitHubPage() => Navigator.of(context).push(PremiumTransitions.slideRight(const GitHubRegisPage()));
-  void _goToFAQPage() => Navigator.of(context).push(PremiumTransitions.slideRight(const FrequentlyAskedScreen()));
+  void _goToGitHubPage()      => Navigator.of(context).push(PremiumTransitions.slideRight(const GitHubRegisPage()));
+  void _goToFAQPage()         => Navigator.of(context).push(PremiumTransitions.slideRight(const FrequentlyAskedScreen()));
 
   void _handleAccessCode() {
     if (_accessCodeController.text.trim().isEmpty) {
@@ -141,19 +170,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final bool isMobile = screenWidth < 1100;
-    final double headlineSize = isMobile ? 40 : 72;
+    final double screenWidth     = MediaQuery.of(context).size.width;
+    final bool   isMobile        = screenWidth < 1100;
+    final double headlineSize    = isMobile ? 40 : 72;
     final double subHeadlineSize = isMobile ? 14 : 18;
-    final double sectionTitleSize = isMobile ? 40 : 72;
+    final double sectionTitleSz  = isMobile ? 40 : 72;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const PremiumAppBar(),
       body: Stack(
         children: [
+          // ── Persistent dark background (behind the scroll) ───────────────
           const HomeAnimation(),
           PremiumBackgroundStack(
             bgController: _bgController,
@@ -161,13 +192,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             baseColor: const Color(0xFF070709),
             child: const SizedBox.expand(),
           ),
+
+          // ── Scrollable content ───────────────────────────────────────────
           SafeArea(
             child: SingleChildScrollView(
               controller: _scrollController,
               physics: const BouncingScrollPhysics(),
+              // NO clipBehavior restriction — let white panel paint over dark bg
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // ── HERO SECTION ──
+
+                  // ══ DARK SECTION ════════════════════════════════════════
+
+                  // ── Hero ──────────────────────────────────────────────────
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: SizedBox(
@@ -185,7 +223,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   borderRadius: BorderRadius.circular(30),
                                   border: Border.all(color: Colors.white.withOpacity(0.1)),
                                 ),
-                                child: const Text('SYSTEM ONLINE', style: TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 2.0)),
+                                child: const Text(
+                                  'SYSTEM ONLINE',
+                                  style: TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 2.0),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 32),
@@ -193,23 +234,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               controller: _textController,
                               fullText: '< Coming very soon >\n< stay tuned >',
                               highlightPart: '< Coming very soon >',
-                              style: TextStyle(fontFamily: '__copernicus_669e4a', color: Colors.white, fontSize: headlineSize, fontWeight: FontWeight.w800, height: 1.1, letterSpacing: -1.0),
+                              style: TextStyle(
+                                fontFamily: '__copernicus_669e4a',
+                                color: Colors.white,
+                                fontSize: headlineSize,
+                                fontWeight: FontWeight.w800,
+                                height: 1.1,
+                                letterSpacing: -1.0,
+                              ),
                             ),
                             const SizedBox(height: 20),
                             FadeTransition(
                               opacity: _fadeInAnimation,
                               child: Padding(
                                 padding: EdgeInsets.symmetric(horizontal: isMobile ? 10 : 40),
-                                child: Text('We are crafting something extraordinary. Join the next-gen agent platform built by Anubhav Singh Rajput.',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: subHeadlineSize, fontWeight: FontWeight.w300, height: 1.5)),
+                                child: Text(
+                                  'We are crafting something extraordinary. Join the next-gen agent platform built by Anubhav Singh Rajput.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.4),
+                                    fontSize: subHeadlineSize,
+                                    fontWeight: FontWeight.w300,
+                                    height: 1.5,
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 48),
                             FadeTransition(
                               opacity: _fadeInAnimation,
                               child: Wrap(
-                                spacing: 16, runSpacing: 16, alignment: WrapAlignment.center,
+                                spacing: 16, runSpacing: 16,
+                                alignment: WrapAlignment.center,
                                 children: [
                                   ButtonBulge(child: AuraButton(onPressed: _goToLoginPage, auraController: _bgController, width: 150, height: 40, child: _buildButtonContent('sign in', Icons.arrow_forward))),
                                   ButtonBulge(child: AuraButton(onPressed: _goToSignupPage, outlined: true, auraController: _bgController, width: 150, height: 40, child: _buildButtonContent('create', Icons.person_add_outlined))),
@@ -223,7 +279,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-                  // COMPUTING ANIMATION SECTION
+                  // ── Computing section ─────────────────────────────────────
                   AnimatedOpacity(
                     opacity: _computingAnimated ? 1.0 : 0.0,
                     duration: const Duration(milliseconds: 800),
@@ -234,8 +290,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           constraints: const BoxConstraints(maxWidth: 1300),
                           child: isMobile
                               ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              const ComputingAnimation(),
+                              const Center(child: ComputingAnimation()),
                               const SizedBox(height: 60),
                               _buildDescriptiveText(),
                             ],
@@ -258,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-                  //  EARLY ACCESS SECTION
+                  // ── Early access section ──────────────────────────────────
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: Container(
@@ -269,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             controller: _earlyAccessController,
                             fullText: '< Early Access >',
                             highlightPart: '< Early Access >',
-                            style: TextStyle(color: Colors.white, fontSize: sectionTitleSize, fontWeight: FontWeight.bold, fontFamily: '__copernicus_669e4a'),
+                            style: TextStyle(color: Colors.white, fontSize: sectionTitleSz, fontWeight: FontWeight.bold, fontFamily: '__copernicus_669e4a'),
                           ),
                           const SizedBox(height: 48),
                           FadeTransition(
@@ -279,8 +336,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 final bool mobile = constraints.maxWidth < 1000;
                                 if (mobile) {
                                   return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
                                     children: [
-                                      SizedBox(width: constraints.maxWidth, height: 480, child: const MessagingAnimation()),
+                                      SizedBox(
+                                        width:  constraints.maxWidth,
+                                        height: 480,
+                                        child:  const MessagingAnimation(),
+                                      ),
                                       const SizedBox(height: 40),
                                       _buildEarlyAccessPanel(screenWidth, isMobile),
                                     ],
@@ -307,6 +369,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
+
+                  // ══ WHITE OVERLAY PANEL ══════════════════════════════════
+                  // Scrolls in naturally as the next section.
+                  // The lined partition inside OverlaysPanel creates the
+                  // visual "superimposed" boundary between dark and white.
+                  KeyedSubtree(
+                    key: _overlayKey,
+                    child: AnimatedOpacity(
+                      opacity: _overlayVisible ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.easeOut,
+                      child: const OverlaysPanel(),
+                    ),
+                  ),
+
+                  // ── Footer (always dark bg) ───────────────────────────────
                   BottomInfoPanel(),
                 ],
               ),
@@ -317,12 +395,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  // ── Descriptive text ──────────────────────────────────────────────────────
+
   Widget _buildDescriptiveText() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "< The Future of #MESSAGING >",
+        const Text(
+          '< The Future of MESSAGING >',
           style: TextStyle(
             color: Colors.greenAccent,
             fontSize: 42,
@@ -332,10 +412,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ),
         const SizedBox(height: 24),
-        // INTEGRATED: Fast Typing Animation for the paragraph
         ParagraphTypingAnimation(
           controller: _descriptionController,
-          text: "QuantMessage isn't just a tool; it's an agentic ecosystem. We are bridging the gap between human intent and AI execution, allowing teams to automate complex workflows with surgical precision.",
+          text: "QuantMessage isn't just a tool; it's an agentic ecosystem. "
+              'We are bridging the gap between human intent and AI execution, '
+              'allowing teams to automate complex workflows with surgical precision.',
           style: TextStyle(
             color: Colors.white.withOpacity(0.5),
             fontSize: 20,
@@ -347,13 +428,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  // ── Early access panel ────────────────────────────────────────────────────
+
   Widget _buildEarlyAccessPanel(double screenWidth, bool isMobile) {
     return Column(
       children: [
         AnimatedBuilder(
           animation: _betaTextController,
           builder: (context, child) {
-            final shimmer = _betaShimmerAnimation.value;
+            final shimmer   = _betaShimmerAnimation.value;
             final baseGreen = const Color(0xFF4ADE80);
             final glowGreen = const Color(0xFFBBF7D0);
             final textColor = Color.lerp(baseGreen.withOpacity(0.75), glowGreen, shimmer)!;
@@ -364,21 +447,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 blendMode: BlendMode.srcIn,
                 shaderCallback: (bounds) => LinearGradient(
                   begin: Alignment(-1.0 + shimmer * 2.5, 0),
-                  end: Alignment(0.4 + shimmer * 2.5, 0),
+                  end:   Alignment( 0.4 + shimmer * 2.5, 0),
                   colors: [baseGreen.withOpacity(0.7), glowGreen, baseGreen.withOpacity(0.7)],
                   stops: const [0.0, 0.5, 1.0],
                 ).createShader(bounds),
                 child: Text(
-                  "Register to receive Beta version updates.",
+                  'Register to receive Beta version updates.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w400, fontStyle: FontStyle.italic, letterSpacing: 0.3, height: 1.5,
-                      shadows: [Shadow(color: const Color(0xFF4ADE80).withOpacity(0.45 * shimmer), blurRadius: 14, offset: Offset.zero)]),
+                  style: TextStyle(
+                    color: textColor, fontSize: 15,
+                    fontWeight: FontWeight.w400, fontStyle: FontStyle.italic,
+                    letterSpacing: 0.3, height: 1.5,
+                    shadows: [Shadow(color: const Color(0xFF4ADE80).withOpacity(0.45 * shimmer), blurRadius: 14, offset: Offset.zero)],
+                  ),
                 ),
               ),
             );
           },
         ),
+
         const SizedBox(height: 30),
+
         Container(
           width: isMobile ? screenWidth * 0.8 : 320,
           height: 52,
@@ -395,7 +484,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   controller: _accessCodeController,
                   style: const TextStyle(color: Colors.white, fontSize: 13),
                   decoration: InputDecoration(
-                    hintText: 'Enter access code...',
+                    hintText:  'Enter access code...',
                     hintStyle: TextStyle(color: Colors.white.withOpacity(0.2), fontSize: 13),
                     border: InputBorder.none,
                   ),
@@ -411,28 +500,44 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ],
           ),
         ),
+
         const SizedBox(height: 60),
+
         Wrap(
           spacing: 12, runSpacing: 12, alignment: WrapAlignment.center,
           children: [
-            ButtonBulge(child: GitHubButton(onPressed: _goToGitHubPage, width: 150, height: 40)),
+            ButtonBulge(child: GitHubButton(onPressed: _goToGitHubPage,      width: 150, height: 40)),
             ButtonBulge(child: GoogleButton(onPressed: _goToGoogleLoginPage, width: 150, height: 40)),
           ],
         ),
+
         const SizedBox(height: 30),
+
         GestureDetector(
           onTap: _goToFAQPage,
-          child: Text("Frequently Asked Questions", style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14, decoration: TextDecoration.underline)),
+          child: Text(
+            'Frequently Asked Questions',
+            style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14, decoration: TextDecoration.underline),
+          ),
         ),
       ],
     );
   }
 
+  // ── Button content helper ─────────────────────────────────────────────────
+
   Widget _buildButtonContent(String text, IconData icon) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(text, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, letterSpacing: 1.0)),
+        Flexible(
+          child: Text(
+            text,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, letterSpacing: 1.0),
+          ),
+        ),
         const SizedBox(width: 8),
         Icon(icon, size: 16),
       ],
@@ -440,45 +545,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 }
 
-///  Specialized Typing Animation for Paragraphs (Left Aligned)
-class ParagraphTypingAnimation extends StatefulWidget {
+// ─── Paragraph typing animation ───────────────────────────────────────────────
+
+class ParagraphTypingAnimation extends StatelessWidget {
   final AnimationController controller;
-  final String text;
-  final TextStyle style;
+  final String               text;
+  final TextStyle            style;
 
   const ParagraphTypingAnimation({
     Key? key,
     required this.controller,
     required this.text,
-    required this.style
+    required this.style,
   }) : super(key: key);
 
   @override
-  State<ParagraphTypingAnimation> createState() => _ParagraphTypingAnimationState();
-}
-
-class _ParagraphTypingAnimationState extends State<ParagraphTypingAnimation> {
-  @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: widget.controller,
-      builder: (context, child) {
-        // Map the controller value (0.0 to 1.0) to the number of characters
-        final int count = (widget.controller.value * widget.text.length).floor();
-        final String visibleText = widget.text.substring(0, count);
-
+      animation: controller,
+      builder: (context, _) {
+        final count       = (controller.value * text.length).floor();
+        final visibleText = text.substring(0, count);
         return RichText(
           textAlign: TextAlign.left,
           text: TextSpan(
-            style: widget.style,
+            style: style,
             children: [
               TextSpan(text: visibleText),
-              // Blinking cursor
               WidgetSpan(
                 child: Container(
-                  width: 2,
-                  height: widget.style.fontSize != null ? widget.style.fontSize! * 0.9 : 20,
-                  color: Colors.white.withOpacity(0.7),
+                  width:  2,
+                  height: (style.fontSize ?? 20) * 0.9,
+                  color:  Colors.white.withOpacity(0.7),
                 ),
               ),
             ],
