@@ -18,6 +18,7 @@ import 'animations/messaging_animation.dart';
 import 'animations/computing_animation.dart';
 import 'overlays/overlays_pannel.dart';
 import 'overlays/features_overlay.dart';
+import 'overlays/overlays_extended.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -47,15 +48,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Overlays panel reveal
   late AnimationController _overlaysPanelController;
   late Animation<double>   _overlaysPanelFade;
+  late Animation<Offset>   _overlaysPanelSlide;
+
+  // NEW: Overlays Extended reveal (for the white background panel)
+  late AnimationController _overlaysExtendedController;
+  late Animation<double>   _overlaysExtendedFade;
+  late Animation<Offset>   _overlaysExtendedSlide;
 
   final ScrollController      _scrollController     = ScrollController();
   final TextEditingController _accessCodeController = TextEditingController();
 
-  bool _earlyAccessAnimated   = false;
-  bool _computingAnimated     = false;
-  bool _descriptionAnimated   = false;
-  bool _featuresAnimated      = false;
-  bool _overlaysPanelAnimated = false;
+  bool _earlyAccessAnimated        = false;
+  bool _computingAnimated          = false;
+  bool _descriptionAnimated        = false;
+  bool _featuresAnimated           = false;
+  bool _overlaysPanelAnimated      = false;
+  bool _overlaysExtendedAnimated   = false; // NEW
 
   @override
   void initState() {
@@ -114,6 +122,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       parent: _overlaysPanelController,
       curve: Curves.easeOut,
     );
+    _overlaysPanelSlide = Tween<Offset>(
+      begin: const Offset(0, 0.04),
+      end:   Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _overlaysPanelController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    // NEW: Overlays Extended Animation Controller
+    _overlaysExtendedController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    );
+    _overlaysExtendedFade = CurvedAnimation(
+      parent: _overlaysExtendedController,
+      curve: Curves.easeOut,
+    );
+    _overlaysExtendedSlide = Tween<Offset>(
+      begin: const Offset(0, 0.05),
+      end:   Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _overlaysExtendedController,
+      curve: Curves.easeOutCubic,
+    ));
 
     _scrollController.addListener(_onScroll);
 
@@ -140,12 +172,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       setState(() => _earlyAccessAnimated = true);
       _earlyAccessController.forward();
     }
-    // Overlays panel appears just before FeaturesOverlay
+    // Overlays panel appears just before Overlays Extended
     if (offset > 1400 && !_overlaysPanelAnimated) {
       setState(() => _overlaysPanelAnimated = true);
       _overlaysPanelController.forward();
     }
-    if (offset > 1800 && !_featuresAnimated) {
+    // NEW: Overlays Extended (white background panel) triggers
+    if (offset > 1900 && !_overlaysExtendedAnimated) {
+      setState(() => _overlaysExtendedAnimated = true);
+      _overlaysExtendedController.forward();
+    }
+    if (offset > 2400 && !_featuresAnimated) {
       setState(() => _featuresAnimated = true);
       _featuresController.forward();
     }
@@ -171,6 +208,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _descriptionController.dispose();
     _featuresController.dispose();
     _overlaysPanelController.dispose();
+    _overlaysExtendedController.dispose(); // NEW
     _scrollController.dispose();
     _accessCodeController.dispose();
     super.dispose();
@@ -478,11 +516,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   FadeTransition(
                     opacity: _overlaysPanelFade,
                     child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 0.03),
-                        end:   Offset.zero,
-                      ).animate(_overlaysPanelFade),
+                      position: _overlaysPanelSlide,
                       child: const OverlaysPanel(),
+                    ),
+                  ),
+
+                  // ── NEW: OVERLAYS EXTENDED (white bg with DesktopAnimation) ──
+                  FadeTransition(
+                    opacity: _overlaysExtendedFade,
+                    child: SlideTransition(
+                      position: _overlaysExtendedSlide,
+                      child: const _OverlaysExtendedSection(),
                     ),
                   ),
 
@@ -685,6 +729,71 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         const SizedBox(width: 8),
         Icon(icon, size: 16),
       ],
+    );
+  }
+}
+
+// ─── NEW: Overlays Extended Section Widget ───────────────────────────────────
+
+class _OverlaysExtendedSection extends StatelessWidget {
+  const _OverlaysExtendedSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1300),
+          child: const OverlaysExtended(
+            title: 'Use QuantMessage where you work',
+            subtitle: 'CROSS-PLATFORM EXPERIENCE',
+            description:
+            'Manage all your messages with AI-powered intelligence. '
+                'Available across desktop, mobile, and web platforms with seamless synchronization.',
+            maxWidth: 1300,
+            features: [
+              OverlayFeature(
+                title: 'Desktop Application',
+                description:
+                'Native desktop experience with system-level integrations and shortcuts',
+                icon: Icons.desktop_windows,
+              ),
+              OverlayFeature(
+                title: 'AI-Powered Sorting',
+                description:
+                'Automatically categorize and prioritize messages using advanced AI',
+                icon: Icons.auto_awesome,
+              ),
+              OverlayFeature(
+                title: 'Cross-Platform Sync',
+                description:
+                'Your messages and settings stay synchronized across all devices',
+                icon: Icons.sync,
+              ),
+              OverlayFeature(
+                title: 'Smart Notifications',
+                description:
+                'Get notified only for what matters most with intelligent filtering',
+                icon: Icons.notifications_active,
+              ),
+              OverlayFeature(
+                title: 'Message Categories',
+                description:
+                'Organized into Chats, Unread, Status, and Channels automatically',
+                icon: Icons.category,
+              ),
+              OverlayFeature(
+                title: 'End-to-End Encryption',
+                description:
+                'Your conversations are secure with military-grade encryption',
+                icon: Icons.lock_outline,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
