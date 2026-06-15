@@ -404,7 +404,7 @@ class _DocsButtonState extends State<_DocsButton> {
                 style: TextStyle(
                   fontFamily:  'Inter',
                   fontSize:    14,
-                  fontWeight:  FontWeight.w500,
+                  fontWeight:  FontWeight.w900,
                   color: _hovered ? Colors.white : const Color(0xFF0D0D0D),
                   letterSpacing: 0.2,
                 ),
