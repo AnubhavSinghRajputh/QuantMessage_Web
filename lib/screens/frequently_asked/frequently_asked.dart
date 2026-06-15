@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 import '../premium_effects.dart';
 
-
 class FAQItem {
   final String question;
   final String answer;
   const FAQItem({required this.question, required this.answer});
 }
-
-
-
-
 
 /// subtle animation when fade is pressed and slide animation
 class FrequentlyAskedScreen extends StatefulWidget {
@@ -22,13 +17,8 @@ class FrequentlyAskedScreen extends StatefulWidget {
 
 class _FrequentlyAskedScreenState extends State<FrequentlyAskedScreen>
     with TickerProviderStateMixin {
-  // Which tile is currently expanded (null = none).
   int? _expandedIndex;
-
-  // Background looping animation controller.
   late final AnimationController _bgController;
-
-  // Entry animation controller.
   late final AnimationController _entryController;
   late final Animation<double> _entryOpacity;
   late final Animation<Offset> _entrySlide;
@@ -135,15 +125,16 @@ class _FrequentlyAskedScreenState extends State<FrequentlyAskedScreen>
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               const SizedBox(height: 36),
+                              // MODIFIED: Updated style to match "Coming Very Soon" image
                               const Text(
                                 '< Frequently Asked Questions >',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontFamily: 'serif',
+                                  fontFamily: 'Inter', // Changed from serif to modern sans-serif
                                   fontSize: 36,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.bold, // Made bold
                                   color: Colors.white,
-                                  letterSpacing: -0.6,
+                                  letterSpacing: 0.5,
                                   height: 1.2,
                                 ),
                               ),
@@ -190,76 +181,86 @@ class _FrequentlyAskedScreenState extends State<FrequentlyAskedScreen>
     final isOpen = _expandedIndex == index;
     final faq = _faqs[index];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => _toggle(index),
-              splashColor: Colors.white.withOpacity(0.04),
-              highlightColor: Colors.white.withOpacity(0.03),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        faq.question,
-                        style: const TextStyle(
-                          fontFamily: 'serif',
-                          fontSize: 23,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                          letterSpacing: -0.2,
-                          height: 1.25,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    AnimatedOpacity(
-                      opacity: isOpen ? 0.0 : 1.0,
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeInOut,
-                      child: const SizedBox(
-                        width: 28,
-                        height: 28,
-                        child: Center(
-                          child: Icon(
-                            Icons.add,
+    // MODIFIED: Added Container with bottom border for separation
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.white.withOpacity(0.1), // Subtle border line
+            width: 1.0,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _toggle(index),
+                splashColor: Colors.white.withOpacity(0.04),
+                highlightColor: Colors.white.withOpacity(0.03),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          faq.question,
+                          style: const TextStyle(
+                            fontFamily: 'Inter', // Changed to sans-serif for consistency
+                            fontSize: 23,
+                            fontWeight: FontWeight.w600,
                             color: Colors.white,
-                            size: 22,
+                            letterSpacing: -0.2,
+                            height: 1.25,
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 12),
+                      AnimatedOpacity(
+                        opacity: isOpen ? 0.0 : 1.0,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOut,
+                        child: const SizedBox(
+                          width: 28,
+                          height: 28,
+                          child: Center(
+                            child: Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          // Animated answer pannel
-          ClipRect(
-            child: AnimatedAlign(
-              alignment: Alignment.topLeft,
-              heightFactor: isOpen ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 400),
-              curve: Curves.easeOutCubic,
-              child: AnimatedOpacity(
-                opacity: isOpen ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 300),
+            ClipRect(
+              child: AnimatedAlign(
+                alignment: Alignment.topLeft,
+                heightFactor: isOpen ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 400),
                 curve: Curves.easeOutCubic,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 18, right: 56, top: 2),
-                  child: _buildAnswerText(faq.answer),
+                child: AnimatedOpacity(
+                  opacity: isOpen ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 18, right: 56, top: 2),
+                    child: _buildAnswerText(faq.answer),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
