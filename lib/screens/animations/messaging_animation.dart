@@ -36,8 +36,8 @@ class _MessagingAnimationState extends State<MessagingAnimation>
 
   static const int _poolSize = 12;
 
-  static const String _labelLeft  = 'QM Node A';
-  static const String _labelRight = 'QM Node B';
+  static const String _labelLeft  = 'QM USER A';
+  static const String _labelRight = 'QM USER B';
 
   // ── B&W palette (mirrors premium_effects.dart dark base) ──────────────────
   static const Color _panelBg      = Color(0xFF070709);   // same as baseColor
@@ -219,7 +219,7 @@ class _MessagingAnimationState extends State<MessagingAnimation>
                     ),
                   ),
                   child: Text(
-                    'LIVE CHANNEL',
+                    'QUANTMESSAGE_CHANNEL',
                     style: TextStyle(
                       color:       Colors.white.withOpacity(0.55),
                       fontSize:    9,
