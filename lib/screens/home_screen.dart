@@ -34,9 +34,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late Animation<double> _betaFadeAnimation;
   late Animation<double> _betaShimmerAnimation;
 
+  // NEW: Controller for the descriptive text typing animation
+  late AnimationController _descriptionController;
+
   final ScrollController _scrollController = ScrollController();
   bool _earlyAccessAnimated = false;
   bool _computingAnimated = false;
+  bool _descriptionAnimated = false; // Trigger for the descriptive text
 
   final TextEditingController _accessCodeController = TextEditingController();
 
@@ -56,6 +60,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _betaShimmerAnimation = CurvedAnimation(parent: _betaTextController, curve: Curves.easeInOut);
     _betaTextController.repeat(reverse: true);
 
+    // Initialize Description Controller (Set to 1.5s for "fast" typing of a paragraph)
+    _descriptionController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+
     _scrollController.addListener(_onScroll);
 
     Future.delayed(const Duration(milliseconds: 500), () {
@@ -68,8 +78,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _onScroll() {
     if (_scrollController.hasClients) {
+      // Trigger Computing Card and Descriptive Text typing
       if (_scrollController.offset > 400 && !_computingAnimated) {
-        setState(() => _computingAnimated = true);
+        setState(() {
+          _computingAnimated = true;
+          _descriptionAnimated = true;
+        });
+        _descriptionController.forward(); // Start fast typing
       }
       if (_scrollController.offset > 800 && !_earlyAccessAnimated) {
         setState(() => _earlyAccessAnimated = true);
@@ -95,6 +110,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _textController.dispose();
     _earlyAccessController.dispose();
     _betaTextController.dispose();
+    _descriptionController.dispose();
     _scrollController.dispose();
     _accessCodeController.dispose();
     super.dispose();
@@ -128,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
-    final bool isMobile = screenWidth < 1100; // Slightly increased threshold for the new larger card
+    final bool isMobile = screenWidth < 1100;
     final double headlineSize = isMobile ? 40 : 72;
     final double subHeadlineSize = isMobile ? 14 : 18;
     final double sectionTitleSize = isMobile ? 40 : 72;
@@ -219,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           child: isMobile
                               ? Column(
                             children: [
-                              const ComputingAnimation(), // Fixed size card
+                              const ComputingAnimation(),
                               const SizedBox(height: 60),
                               _buildDescriptiveText(),
                             ],
@@ -234,8 +250,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   child: _buildDescriptiveText(),
                                 ),
                               ),
-                              // Since ComputingAnimation is now a fixed-size card,
-                              // we just place it here without Expanded to prevent stretching
                               const ComputingAnimation(),
                             ],
                           ),
@@ -310,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Text(
           "< The Future of Coordination >",
           style: TextStyle(
-            color: Colors.greenAccent, // Updated to greenAccent for vibrancy
+            color: Colors.greenAccent,
             fontSize: 42,
             fontWeight: FontWeight.bold,
             fontFamily: 'Inter',
@@ -318,13 +332,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ),
         const SizedBox(height: 24),
-        Text(
-          " QuantMessage isn't just a tool; it's an agentic ecosystem. We are bridging the gap between human intent and AI execution, allowing teams to automate complex workflows with surgical precision.  ",
+        // INTEGRATED: Fast Typing Animation for the paragraph
+        ParagraphTypingAnimation(
+          controller: _descriptionController,
+          text: "QuantMessage isn't just a tool; it's an agentic ecosystem. We are bridging the gap between human intent and AI execution, allowing teams to automate complex workflows with surgical precision.",
           style: TextStyle(
-            color: Colors.grey.withOpacity(0.5),
+            color: Colors.white.withOpacity(0.5),
             fontSize: 20,
-            fontWeight: FontWeight.w400,
-            height: 1.5,
+            fontWeight: FontWeight.w300,
+            height: 1.6,
           ),
         ),
       ],
@@ -420,6 +436,55 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         const SizedBox(width: 8),
         Icon(icon, size: 16),
       ],
+    );
+  }
+}
+
+/// NEW: Specialized Typing Animation for Paragraphs (Left Aligned)
+class ParagraphTypingAnimation extends StatefulWidget {
+  final AnimationController controller;
+  final String text;
+  final TextStyle style;
+
+  const ParagraphTypingAnimation({
+    Key? key,
+    required this.controller,
+    required this.text,
+    required this.style
+  }) : super(key: key);
+
+  @override
+  State<ParagraphTypingAnimation> createState() => _ParagraphTypingAnimationState();
+}
+
+class _ParagraphTypingAnimationState extends State<ParagraphTypingAnimation> {
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: widget.controller,
+      builder: (context, child) {
+        // Map the controller value (0.0 to 1.0) to the number of characters
+        final int count = (widget.controller.value * widget.text.length).floor();
+        final String visibleText = widget.text.substring(0, count);
+
+        return RichText(
+          textAlign: TextAlign.left, // Correct alignment for paragraphs
+          text: TextSpan(
+            style: widget.style,
+            children: [
+              TextSpan(text: visibleText),
+              // Blinking cursor
+              WidgetSpan(
+                child: Container(
+                  width: 2,
+                  height: widget.style.fontSize != null ? widget.style.fontSize! * 0.9 : 20,
+                  color: Colors.white.withOpacity(0.7),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

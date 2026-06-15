@@ -97,13 +97,13 @@ class _ComputingAnimationState extends State<ComputingAnimation>
           ),
         ],
       ),
-      // Use Center to push the Column to the exact middle of the container
+      // ye center aligner hai : Use Center to push the Column to the exact middle of the container
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center, // Center vertically
           crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
           children: [
-            // ── STATUS PILL ──
+
             // Wrapped in a Row to ensure it doesn't stretch
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -150,7 +150,7 @@ class _ComputingAnimationState extends State<ComputingAnimation>
 
             const SizedBox(height: 50),
 
-            // ── TEXT SECTION ──
+            // TEXT SECTION
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -167,7 +167,7 @@ class _ComputingAnimationState extends State<ComputingAnimation>
                   ),
                 ),
                 // Using a Stack with a fixed width to prevent shaking
-                // BUT ensuring the overall row stays centered.
+
                 SizedBox(
                   width: 300, // Reserved space for the longest word "employees"
                   child: Stack(
@@ -198,10 +198,10 @@ class _ComputingAnimationState extends State<ComputingAnimation>
     );
   }
 
-  // Helper to position the cursor exactly at the end of the current word
+
   double _calculateTextWidth(String text) {
-    // Approximate width per character for Inter Bold 64px
-    // In a real production app, use TextPainter for exact pixels
+    //Approximate width per character for Inter Bold 64px
+    //In a real production app, use TextPainter for exact pixels
     return text.length * 32.0;
   }
 
