@@ -147,7 +147,7 @@ class FeaturesOverlay extends StatelessWidget {
     final buttons = <Widget>[
       _buildDownloadButton('macOS',            fontSize),
       _buildDownloadButton('Windows',          fontSize),
-      _buildDownloadButton('Windows (arm64)',  fontSize),
+      _buildDownloadButton('Android',  fontSize),
     ];
 
     if (isMobile) {
