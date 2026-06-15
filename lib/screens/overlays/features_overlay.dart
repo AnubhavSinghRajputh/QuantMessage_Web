@@ -266,8 +266,8 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
           // Hero heading with medium-pace typing
           TypingTextAnimation(
             controller:    _heroTypingController,
-            fullText:      '< One In All Messaging Powered By A.I >',
-            highlightPart: '< One In All Messaging Powered By A.I >',
+            fullText:      '< All In One Messaging Powered By A.I >',
+            highlightPart: '< All In One Messaging Powered By A.I >',
             style: TextStyle(
               fontFamily:    '__copernicus_669e4a',
               color:         Colors.white,
