@@ -3,6 +3,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '../animations/animation_widget/desktop_animation.dart';
+import '../transition_animations.dart';
+
+/// Selects which [PremiumTransitions] animation drives the overlay
+/// when pushed as a route, and how it transitions internally when
+/// the body content is swapped via [AnimatedSwitcher].
+enum OverlayTransitionType {
+  slideRight,
+  zoomFade,
+  slideUp,
+  softFade,
+}
 
 class OverlaysExtended extends StatefulWidget {
   final String? title;
@@ -24,12 +35,17 @@ class OverlaysExtended extends StatefulWidget {
   final AnimationController? controller;
   final VoidCallback? onAnimated;
 
-  // ── NEW: Size configuration ───────────────────────────────────────────────
-  final double desktopWidthFactor;  // % of container width (default 0.85)
-  final double desktopAspectRatio;  // width/height ratio
+  // ── Size configuration ────────────────────────────────────────────────────
+  final double desktopWidthFactor;
+  final double desktopAspectRatio;
   final double minDesktopHeight;
   final double maxDesktopHeight;
-  final double compactScale;        // Global scale-down multiplier (0.0 - 1.0)
+  final double compactScale;
+
+  // ── NEW: Transition configuration ─────────────────────────────────────────
+  final OverlayTransitionType transitionType;
+  final bool animateContentSwap;
+  final Key? contentKey; // change to trigger internal AnimatedSwitcher
 
   const OverlaysExtended({
     super.key,
@@ -38,7 +54,7 @@ class OverlaysExtended extends StatefulWidget {
     this.description,
     this.customContent,
     this.showDesktop = true,
-    this.padding = const EdgeInsets.all(20.0), // ← reduced from 32
+    this.padding = const EdgeInsets.all(20.0),
     this.maxWidth,
     // Animation defaults
     this.animateOnScroll     = true,
@@ -50,13 +66,59 @@ class OverlaysExtended extends StatefulWidget {
     this.scrollController,
     this.controller,
     this.onAnimated,
-    // Size defaults (more compact)
-    this.desktopWidthFactor  = 0.85,  // ← smaller (was 0.95)
-    this.desktopAspectRatio  = 1.6,   // ← wider/shorter ratio
-    this.minDesktopHeight    = 240,   // ← reduced from 300
-    this.maxDesktopHeight    = 380,   // ← reduced from 500
+    // Size defaults
+    this.desktopWidthFactor  = 0.85,
+    this.desktopAspectRatio  = 1.6,
+    this.minDesktopHeight    = 240,
+    this.maxDesktopHeight    = 380,
     this.compactScale        = 1.0,
+    // Transition defaults
+    this.transitionType      = OverlayTransitionType.slideUp,
+    this.animateContentSwap  = true,
+    this.contentKey,
   });
+
+  /// Pushes [overlay] as a full-screen route using the matching
+  /// [PremiumTransitions] animation. If [transition] is omitted, the
+  /// overlay's own [transitionType] is used.
+  ///
+  /// Example:
+  /// ```dart
+  /// OverlaysExtended.push(
+  ///   context: context,
+  ///   overlay: OverlaysExtended(
+  ///     title: 'Hello',
+  ///     description: 'World',
+  ///     transitionType: OverlayTransitionType.zoomFade,
+  ///   ),
+  ///   transition: OverlayTransitionType.softFade, // overrides
+  /// );
+  /// ```
+  static Future<T?> push<T>({
+    required BuildContext context,
+    required OverlaysExtended overlay,
+    OverlayTransitionType? transition,
+  }) {
+    final type = transition ?? overlay.transitionType;
+    switch (type) {
+      case OverlayTransitionType.slideRight:
+        return Navigator.of(context).push<T>(
+          PremiumTransitions.slideRight(overlay) as Route<T>,
+        );
+      case OverlayTransitionType.zoomFade:
+        return Navigator.of(context).push<T>(
+          PremiumTransitions.zoomFade(overlay) as Route<T>,
+        );
+      case OverlayTransitionType.slideUp:
+        return Navigator.of(context).push<T>(
+          PremiumTransitions.slideUp(overlay) as Route<T>,
+        );
+      case OverlayTransitionType.softFade:
+        return Navigator.of(context).push<T>(
+          PremiumTransitions.softFade(overlay) as Route<T>,
+        );
+    }
+  }
 
   @override
   State<OverlaysExtended> createState() => _OverlaysExtendedState();
@@ -258,21 +320,14 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
             borderRadius: BorderRadius.circular(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min, // ← tightens layout
+              mainAxisSize: MainAxisSize.min,
               children: [
                 if (widget.title != null ||
                     widget.subtitle != null ||
                     widget.description != null)
                   _buildHeader(),
 
-                if (widget.showDesktop)
-                  _buildDesktopSection()
-                else if (widget.customContent != null)
-                  Padding(
-                    padding: widget.padding,
-                    child: widget.customContent!,
-                  ),
-                // ❌ Key Features section removed
+                _buildAnimatedBody(),
               ],
             ),
           ),
@@ -281,12 +336,107 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     );
   }
 
+  /// Wraps the body in an [AnimatedSwitcher] so that swaps
+  /// (e.g. desktop → customContent, or any rebuild with a new
+  /// [OverlaysExtended.contentKey]) animate using the configured
+  /// [OverlayTransitionType].
+  Widget _buildAnimatedBody() {
+    final body = widget.showDesktop
+        ? _buildDesktopSection()
+        : widget.customContent != null
+        ? Padding(
+      padding: widget.padding,
+      child: widget.customContent!,
+    )
+        : const SizedBox.shrink();
+
+    if (!widget.animateContentSwap) return body;
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 500),
+      switchInCurve: widget.animationCurve,
+      switchOutCurve: widget.animationCurve,
+      layoutBuilder: _buildSwitcherLayout,
+      transitionBuilder: _buildSwitcherTransition,
+      child: KeyedSubtree(
+        key: widget.contentKey ?? const ValueKey('overlay_body_default'),
+        child: body,
+      ),
+    );
+  }
+
+  /// Aligns incoming and outgoing children to the top, which is
+  /// correct inside a top-aligned [Column].
+  Widget _buildSwitcherLayout(
+      Widget? currentChild,
+      List<Widget> previousChildren,
+      ) {
+    return Stack(
+      alignment: Alignment.topCenter,
+      children: <Widget>[
+        ...previousChildren,
+        if (currentChild != null) currentChild,
+      ],
+    );
+  }
+
+  /// Mirrors the [PremiumTransitions] effect selected by
+  /// [widget.transitionType] inside the [AnimatedSwitcher].
+  Widget _buildSwitcherTransition(
+      Widget child,
+      Animation<double> animation,
+      ) {
+    switch (widget.transitionType) {
+      case OverlayTransitionType.slideRight:
+        final curve = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutQuint,
+        );
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1.0, 0.0),
+            end: Offset.zero,
+          ).animate(curve),
+          child: FadeTransition(opacity: animation, child: child),
+        );
+
+      case OverlayTransitionType.zoomFade:
+        final curve = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.85, end: 1.0).animate(curve),
+            child: child,
+          ),
+        );
+
+      case OverlayTransitionType.slideUp:
+        final curve = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.0, 1.0),
+            end: Offset.zero,
+          ).animate(curve),
+          child: FadeTransition(opacity: animation, child: child),
+        );
+
+      case OverlayTransitionType.softFade:
+        return FadeTransition(opacity: animation, child: child);
+    }
+  }
+
   // ── Compact header ────────────────────────────────────────────────────────
 
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(28, 24, 28, 18), // ← reduced
+      padding: const EdgeInsets.fromLTRB(28, 24, 28, 18),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(
@@ -329,20 +479,20 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
               widget.title!,
               style: const TextStyle(
                 color: Color(0xFF0A0A0A),
-                fontSize: 24, // ← reduced from 28
+                fontSize: 24,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.5,
                 height: 1.2,
               ),
             ),
           if (widget.description != null) ...[
-            const SizedBox(height: 8), // ← reduced from 12
+            const SizedBox(height: 8),
             Text(
               widget.description!,
               style: TextStyle(
                 color: Colors.black.withOpacity(0.65),
-                fontSize: 14, // ← reduced from 15
-                height: 1.4,  // ← reduced from 1.5
+                fontSize: 14,
+                height: 1.4,
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -357,7 +507,7 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
   Widget _buildDesktopSection() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24), // ← reduced
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
       decoration: BoxDecoration(
         color: const Color(0xFFFAFAFA),
         border: Border(
