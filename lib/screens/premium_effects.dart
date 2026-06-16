@@ -550,7 +550,7 @@ class AuraButton extends StatelessWidget {
   final bool outlined;
   final AnimationController? auraController;
 
-  const AuraButton({Key? key, required this.child, required this.onPressed, this.width = 320, this.height = 52, this.borderRadius = 16, this.style, this.outlined = false, this.auraController}) : super(key: key);
+  const AuraButton({Key? key, required this.child, required this.onPressed, this.width = 320, this.height = 52, this.borderRadius = 16, this.style, this.outlined = false, this.auraController, Color? backgroundColor}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

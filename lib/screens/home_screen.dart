@@ -7,6 +7,7 @@ import 'signup_page/login_page.dart';
 import 'signup_page/signup_page.dart';
 import 'signup_page/google_login_page.dart';
 import 'signup_page/github_regis_page.dart';
+import 'app_bar_menu/pricing/pricing_page.dart';
 import 'transition_animations.dart';
 import 'button_buldge.dart';
 import 'home_animation.dart';
@@ -41,16 +42,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   late AnimationController _descriptionController;
 
-  // Features section fade-in
   late AnimationController _featuresController;
   late Animation<double>   _featuresFadeAnimation;
 
-  // Overlays panel reveal
   late AnimationController _overlaysPanelController;
   late Animation<double>   _overlaysPanelFade;
   late Animation<Offset>   _overlaysPanelSlide;
 
-  // REMOVED: Overlays Extended now self-animates
 
   final ScrollController      _scrollController     = ScrollController();
   final TextEditingController _accessCodeController = TextEditingController();
@@ -60,7 +58,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool _descriptionAnimated        = false;
   bool _featuresAnimated           = false;
   bool _overlaysPanelAnimated      = false;
-  // REMOVED: _overlaysExtendedAnimated (widget handles it)
+
+  bool _isPricingHovered = false;
 
   @override
   void initState() {
@@ -127,7 +126,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       curve: Curves.easeOutCubic,
     ));
 
-    // REMOVED: _overlaysExtendedController (now self-managed)
 
     _scrollController.addListener(_onScroll);
 
@@ -154,12 +152,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       setState(() => _earlyAccessAnimated = true);
       _earlyAccessController.forward();
     }
-    // Overlays panel trigger
     if (offset > 1400 && !_overlaysPanelAnimated) {
       setState(() => _overlaysPanelAnimated = true);
       _overlaysPanelController.forward();
     }
-    // REMOVED: Overlays Extended trigger (now self-animates on scroll)
     if (offset > 2400 && !_featuresAnimated) {
       setState(() => _featuresAnimated = true);
       _featuresController.forward();
@@ -186,21 +182,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _descriptionController.dispose();
     _featuresController.dispose();
     _overlaysPanelController.dispose();
-    // REMOVED: _overlaysExtendedController.dispose()
     _scrollController.dispose();
     _accessCodeController.dispose();
     super.dispose();
   }
 
-  // ── Navigation ────────────────────────────────────────────────────────────
+
 
   void _goToLoginPage()       => Navigator.of(context).push(PremiumTransitions.slideRight(const LoginPage()));
   void _goToSignupPage()      => Navigator.of(context).push(PremiumTransitions.slideRight(const SignupPage()));
   void _goToGoogleLoginPage() => Navigator.of(context).push(PremiumTransitions.slideRight(const GoogleLoginPage()));
   void _goToGitHubPage()      => Navigator.of(context).push(PremiumTransitions.slideRight(const GitHubRegisPage()));
   void _goToFAQPage()         => Navigator.of(context).push(PremiumTransitions.slideRight(const FrequentlyAskedScreen()));
+  void _goToPricingPage()     => Navigator.of(context).push(PremiumTransitions.slideRight(const PricingPage()));
 
-  // ── Overlay panel (modal sheet) ──────────────────────────────────────────
+
 
   void _showOverlayPanel() {
     showModalBottomSheet(
@@ -218,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ── Access code ───────────────────────────────────────────────────────────
+
 
   void _handleAccessCode() {
     if (_accessCodeController.text.trim().isEmpty) {
@@ -239,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
+
 
   @override
   Widget build(BuildContext context) {
@@ -269,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
 
-                  // ── HERO ────────────────────────────────────────────────
+
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: SizedBox(
@@ -364,12 +360,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     ),
                                   ),
                                   ButtonBulge(
-                                    child: AuraButton(
-                                      onPressed: _showOverlayPanel,
-                                      outlined: true,
-                                      auraController: _bgController,
-                                      width: 180, height: 40,
-                                      child: _buildButtonContent('built-in tools', Icons.layers_outlined),
+                                    child: MouseRegion(
+                                      onEnter: (_) => setState(() => _isPricingHovered = true),
+                                      onExit:  (_) => setState(() => _isPricingHovered = false),
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 200),
+                                        curve: Curves.easeOut,
+                                        child: AuraButton(
+                                          onPressed: _goToPricingPage,
+                                          outlined: !_isPricingHovered,
+                                          backgroundColor: _isPricingHovered ? Colors.white : null,
+                                          auraController: _bgController,
+                                          width: 180, height: 40,
+                                          child: _buildButtonContent(
+                                            'pricing',
+                                            Icons.sell_outlined,
+                                            textColor: _isPricingHovered ? Colors.black : null,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -381,7 +390,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-                  // ── COMPUTING ANIMATION ──────────────────────────────────
+
                   AnimatedOpacity(
                     opacity: _computingAnimated ? 1.0 : 0.0,
                     duration: const Duration(milliseconds: 800),
@@ -417,7 +426,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-                  // ── EARLY ACCESS ──────────────────────────────────────────
+
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: Container(
@@ -490,7 +499,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-                  // ── OVERLAYS PANEL (white partition) ─────────────────────
+
                   FadeTransition(
                     opacity: _overlaysPanelFade,
                     child: SlideTransition(
@@ -499,12 +508,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-                  // ── OVERLAYS EXTENDED (compact, self-animating) ───────────
-                  // No more external FadeTransition/SlideTransition wrapping!
-                  // The widget now handles its own scroll-triggered animation.
+
                   const _OverlaysExtendedSection(),
 
-                  // ── FEATURES OVERLAY (with bgController passed) ───────────
+
                   FadeTransition(
                     opacity: _featuresFadeAnimation,
                     child: FeaturesOverlay(
@@ -512,7 +519,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-                  // ── FOOTER ────────────────────────────────────────────────
+
                   BottomInfoPanel(),
                 ],
               ),
@@ -523,7 +530,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ── Descriptive text (computing section) ──────────────────────────────────
+
 
   Widget _buildDescriptiveText() {
     return Column(
@@ -556,7 +563,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ── Early access panel ────────────────────────────────────────────────────
+
 
   Widget _buildEarlyAccessPanel(double screenWidth, bool isMobile) {
     return Column(
@@ -682,9 +689,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ── Button content helper ─────────────────────────────────────────────────
 
-  Widget _buildButtonContent(String text, IconData icon) {
+
+  Widget _buildButtonContent(String text, IconData icon, {Color? textColor}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
@@ -693,21 +700,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: Text(
             text,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize:      15,
               fontWeight:    FontWeight.w700,
               letterSpacing: 1.0,
+              color: textColor,
             ),
           ),
         ),
         const SizedBox(width: 8),
-        Icon(icon, size: 16),
+        Icon(icon, size: 16, color: textColor),
       ],
     );
   }
 }
 
-// ─── Overlays Extended Section Widget (Compact, Self-Animating) ──────────────
+
 
 class _OverlaysExtendedSection extends StatelessWidget {
   const _OverlaysExtendedSection();
@@ -727,9 +735,7 @@ class _OverlaysExtendedSection extends StatelessWidget {
             'Manage all your messages with AI-powered intelligence. '
                 'Available across desktop, mobile, and web platforms with seamless synchronization.',
             maxWidth: 1300,
-            // ❌ No features parameter — removed
-            // ✅ Animation is automatic via widget's internal controller
-            // ✅ Compact size is the default
+
           ),
         ),
       ),
@@ -737,7 +743,7 @@ class _OverlaysExtendedSection extends StatelessWidget {
   }
 }
 
-// ─── Paragraph typing animation ───────────────────────────────────────────────
+
 
 class ParagraphTypingAnimation extends StatefulWidget {
   final AnimationController controller;
