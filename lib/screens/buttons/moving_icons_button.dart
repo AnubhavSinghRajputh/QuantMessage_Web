@@ -1,25 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-/// A reusable animated segmented control with a sliding pill indicator.
-///
-/// The slider automatically adapts its look based on [sliderColor]:
-/// - If [sliderColor] is black (or any solid dark color), it renders as a
-///   solid filled pill.
-/// - If [sliderColor] is white (or any light color), it renders as a
-///   translucent "glass" pill (semi-transparent + blurred + subtle border)
-///   instead of a flat white block.
-///
-/// Usage:
-/// ```dart
-/// MovingIconsButton(
-///   labels: const ['Desktop', 'Terminal', 'Web & iOS'],
-///   initialIndex: 0,
-///   onChanged: (index, label) {
-///     // handle selection
-///   },
-/// )
-/// ```
+
 class MovingIconsButton extends StatefulWidget {
   const MovingIconsButton({
     super.key,
@@ -38,21 +20,19 @@ class MovingIconsButton extends StatefulWidget {
     this.glassBlurSigma = 12,
   });
 
-  /// Labels shown on each segment, e.g. ['Desktop', 'Terminal', 'Web & iOS'].
+
   final List<String> labels;
 
-  /// Index selected by default.
+
   final int initialIndex;
 
-  /// Called with (selectedIndex, selectedLabel) whenever the selection changes.
+
   final void Function(int index, String label)? onChanged;
 
   final double height;
   final Color backgroundColor;
 
-  /// Color of the sliding indicator. Black/dark colors render as a solid
-  /// pill; white/light colors automatically render as a translucent,
-  /// frosted-glass pill instead.
+
   final Color sliderColor;
   final Color selectedTextColor;
   final Color unselectedTextColor;
@@ -61,7 +41,7 @@ class MovingIconsButton extends StatefulWidget {
   final Curve animationCurve;
   final EdgeInsets padding;
 
-  /// Blur strength applied to the slider when it renders in glass mode.
+
   final double glassBlurSigma;
 
   @override
@@ -80,8 +60,7 @@ class _MovingIconsButtonState extends State<MovingIconsButton> {
   @override
   void didUpdateWidget(covariant MovingIconsButton oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Keep in sync if the parent drives selection externally (e.g. its own
-    // state) and initialIndex changes after first build.
+
     if (widget.initialIndex != oldWidget.initialIndex &&
         widget.initialIndex != _selectedIndex) {
       setState(() => _selectedIndex = widget.initialIndex);
@@ -94,8 +73,7 @@ class _MovingIconsButtonState extends State<MovingIconsButton> {
     widget.onChanged?.call(index, widget.labels[index]);
   }
 
-  /// Treats colors close to white as "light" → glass slider.
-  /// Everything else (black, brand colors, etc.) → solid slider.
+
   bool get _isLightSlider {
     final c = widget.sliderColor;
     final luminance = c.computeLuminance();

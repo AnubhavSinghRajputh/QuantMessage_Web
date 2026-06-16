@@ -4,11 +4,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-/// A reusable briefcase opening animation widget.
-///
-/// The lid opens/closes repeatedly. Inside the briefcase, three small tools
-/// (a ruler, magnifying glass, and pencil) are drawn with short shafts so
-/// they only protrude just above the lid — not across the entire page.
+
 class BriefcaseAnimation extends StatefulWidget {
   final double size;
   final Duration duration;
@@ -38,7 +34,7 @@ class _BriefcaseAnimationState extends State<BriefcaseAnimation>
       duration: widget.duration,
     )..repeat(reverse: true);
 
-    // Lid swings from closed (0) to fully open (-90°).
+
     _lidAnimation = Tween<double>(begin: 0.0, end: -math.pi / 2).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
@@ -76,7 +72,7 @@ class _BriefcasePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // ── Paints ────────────────────────────────────────────────────────────
+
     final Paint outlinePaint = Paint()
       ..color       = color
       ..style       = PaintingStyle.stroke
@@ -99,26 +95,22 @@ class _BriefcasePainter extends CustomPainter {
       ..color = color.withOpacity(0.07)
       ..style = PaintingStyle.fill;
 
-    // ── Geometry constants ────────────────────────────────────────────────
+
     final double width     = size.width;
     final double height    = size.height;
-    final double bodyTop   = height * 0.45;   // body starts at 45% from top
-    final double bodyHeight = height * 0.50;  // body is 50% of canvas
-    final double lidHeight = height * 0.40;   // lid height (slightly bigger than body region)
+    final double bodyTop   = height * 0.45;
+    final double bodyHeight = height * 0.50;
+    final double lidHeight = height * 0.40;
 
-    // ── Tools (drawn BEHIND the body) ─────────────────────────────────────
-    // Tools sit between the top of the lid (closed) and the body bottom.
-    // They are SHORT — they don't extend across the whole canvas.
     _drawTool(
       canvas:  canvas,
       paint:   toolPaint,
       width:   width,
       height:  height,
-      xFrac:   0.30,                                  // left tool
-      // Shafts go from just above the lid (top) to inside the body (bottom)
-      shaftTopFrac: bodyTop - lidHeight * 0.30,       // short stick-up
-      shaftBotFrac: bodyTop + bodyHeight * 0.45,      // short stick-down
-      headTopFrac:  bodyTop - lidHeight * 0.30,       // head near the top of shaft
+      xFrac:   0.30,
+      shaftTopFrac: bodyTop - lidHeight * 0.30,
+      shaftBotFrac: bodyTop + bodyHeight * 0.45,
+      headTopFrac:  bodyTop - lidHeight * 0.30,
       headSize:     width * 0.04,
       kind: _ToolKind.ruler,
     );
@@ -149,12 +141,10 @@ class _BriefcasePainter extends CustomPainter {
       kind: _ToolKind.pencil,
     );
 
-    // ── Briefcase body ────────────────────────────────────────────────────
     final Rect bodyRect = Rect.fromLTWH(0, bodyTop, width, bodyHeight);
     canvas.drawRect(bodyRect, bodyFill);
     canvas.drawRect(bodyRect, outlinePaint);
 
-    // ── Lid (rotates around its bottom-left pivot) ────────────────────────
     final Offset lidPivot = Offset(0, bodyTop);
     canvas.save();
     canvas.translate(lidPivot.dx, lidPivot.dy);
@@ -165,7 +155,6 @@ class _BriefcasePainter extends CustomPainter {
     canvas.drawRect(lidRect, outlinePaint);
     canvas.restore();
 
-    // ── Handle ────────────────────────────────────────────────────────────
     final double handleWidth  = width * 0.22;
     final double handleHeight = height * 0.10;
     final Rect handleRect = Rect.fromLTWH(
@@ -176,7 +165,6 @@ class _BriefcasePainter extends CustomPainter {
     );
     canvas.drawRect(handleRect, outlinePaint);
 
-    // ── Latch ─────────────────────────────────────────────────────────────
     final double latchW = width * 0.08;
     final double latchH = bodyHeight * 0.14;
     final Rect latchRect = Rect.fromLTWH(
@@ -188,7 +176,6 @@ class _BriefcasePainter extends CustomPainter {
     canvas.drawRect(latchRect, outlinePaint);
   }
 
-  // ── Tool drawing helpers ───────────────────────────────────────────────
   void _drawTool({
     required Canvas canvas,
     required Paint  paint,

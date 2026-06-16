@@ -27,11 +27,10 @@ class _PendulumAnimationState extends State<PendulumAnimation>
     super.initState();
     _ctrl = AnimationController(
       vsync: this,
-      // Faster speed: 1500ms instead of 2000ms
       duration: const Duration(milliseconds: 1500),
     )..repeat();
 
-    // Linear curve for smooth continuous rotation
+
     _rotation = CurvedAnimation(parent: _ctrl, curve: Curves.linear);
   }
 
@@ -56,7 +55,7 @@ class _PendulumAnimationState extends State<PendulumAnimation>
   }
 }
 
-// ─── Painter ──────────────────────────────────────────────────────────────────
+
 
 class _PendulumPainter extends CustomPainter {
   final double rotationFraction; // 0.0 → 1.0 maps to 0 → 360°
@@ -105,7 +104,7 @@ class _PendulumPainter extends CustomPainter {
         ..style = PaintingStyle.fill,
     );
 
-    // ── Pendulum arm rotating 360° ──────────────────────────────────────────
+
     final angle = rotationFraction * 2 * math.pi; // full circle
     final armLen = r * 0.72;
     final armEnd = Offset(

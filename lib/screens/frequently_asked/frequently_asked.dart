@@ -181,7 +181,7 @@ class _FrequentlyAskedScreenState extends State<FrequentlyAskedScreen>
     final isOpen = _expandedIndex == index;
     final faq = _faqs[index];
 
-    // MODIFIED: Added Container with bottom border for separation
+
     return Container(
       decoration: BoxDecoration(
         border: Border(
@@ -211,7 +211,7 @@ class _FrequentlyAskedScreenState extends State<FrequentlyAskedScreen>
                         child: Text(
                           faq.question,
                           style: const TextStyle(
-                            fontFamily: 'Inter', // Changed to sans-serif for consistency
+                            fontFamily: 'Inter',
                             fontSize: 23,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,

@@ -2,8 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-/// A reusable animated feature map widget.
-/// Displays "QuantMessage" at the center with animated branches and labels.
+
 class FeaturesWebAnimation extends StatefulWidget {
   final double size;
   final Duration duration;

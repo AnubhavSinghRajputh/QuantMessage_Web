@@ -1,9 +1,3 @@
-// lib/screens/overlays/overlays_pannel.dart
-//
-// WHITE-background overlay panel.
-// Superimposed on home_screen via a SliverPersistentHeader so it scrolls
-// in naturally as a "second section" with a visible lined partition between
-// the dark home content and this white panel.
 
 import 'package:flutter/material.dart';
 import '../animations/pendulum_animation.dart';
@@ -12,8 +6,7 @@ import '../transition_animations.dart';
 // Re-export so call-sites only need to import this file.
 typedef PremiumTransitionType = OverlayRouteType; // see below
 
-/// Re-declared here so this file is self-contained. Matches the
-/// enum inside [PremiumTransitions] 1-to-1.
+
 enum OverlayRouteType {
   slideRight,
   zoomFade,
@@ -36,7 +29,6 @@ extension _PremiumRoute on OverlayRouteType {
   }
 }
 
-// ─── Feature model ────────────────────────────────────────────────────────────
 
 class _Feature {
   final String title;
@@ -59,24 +51,14 @@ const _features = <_Feature>[
   _Feature(title: 'Skills',                        description: 'Teach QuantMessage your expertise, procedures, and best practices so it delivers consistent, expert-level results.'),
 ];
 
-// ─── Main widget ──────────────────────────────────────────────────────────────
 
 class OverlaysPanel extends StatefulWidget {
-  /// Which [PremiumTransitions] animation drives this panel:
-  ///  • as a route (see [OverlaysPanel.push])
-  ///  • as an internal content-swap transition (see [animateContentSwap])
   final OverlayRouteType transitionType;
 
-  /// Wraps the body in an [AnimatedSwitcher] using the chosen transition.
-  /// Set false for static, no-flicker rebuilds.
   final bool animateContentSwap;
 
-  /// Change this to trigger a body swap (any object that's != previous).
-  /// Examples: [ValueKey], [ObjectKey], [UniqueKey].
   final Key? contentKey;
 
-  /// Optional `onTap` for the "See developer docs" button. If null, the
-  /// button is rendered but does nothing (matching original behavior).
   final VoidCallback? onDocsTap;
 
   const OverlaysPanel({
@@ -87,19 +69,6 @@ class OverlaysPanel extends StatefulWidget {
     this.onDocsTap,
   }) : super(key: key);
 
-  /// Pushes [panel] as a full-screen route using the matching
-  /// [PremiumTransitions] animation. If [transition] is omitted,
-  /// [panel.transitionType] is used.
-  ///
-  /// Example:
-  /// ```dart
-  /// OverlaysPanel.push(
-  ///   context: context,
-  ///   panel: const OverlaysPanel(
-  ///     transitionType: OverlayRouteType.zoomFade,
-  ///   ),
-  /// );
-  /// ```
   static Future<T?> push<T>({
     required BuildContext context,
     required OverlaysPanel panel,
@@ -116,7 +85,6 @@ class OverlaysPanel extends StatefulWidget {
 
 class _OverlaysPanelState extends State<OverlaysPanel>
     with SingleTickerProviderStateMixin {
-  // Hero entry animation
   late final AnimationController _heroCtrl;
   late final Animation<double>   _heroFade;
   late final Animation<Offset>   _heroSlide;
@@ -135,7 +103,6 @@ class _OverlaysPanelState extends State<OverlaysPanel>
       end:   Offset.zero,
     ).animate(CurvedAnimation(parent: _heroCtrl, curve: Curves.easeOutCubic));
 
-    // Start hero animation as soon as the panel appears
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _heroCtrl.forward();
     });
@@ -147,7 +114,6 @@ class _OverlaysPanelState extends State<OverlaysPanel>
     super.dispose();
   }
 
-  // Called by home_screen when the outer scroll position passes the panel
   void onBecameVisible() {
     if (!_heroCtrl.isCompleted) _heroCtrl.forward();
   }
@@ -157,7 +123,6 @@ class _OverlaysPanelState extends State<OverlaysPanel>
     final screenW  = MediaQuery.of(context).size.width;
     final isMobile = screenW < 700;
 
-    // The "body" we want to animate if [animateContentSwap] is on.
     final body = Column(
       children: [
         _buildPartition(),
@@ -191,7 +156,6 @@ class _OverlaysPanelState extends State<OverlaysPanel>
     );
   }
 
-  // ── AnimatedSwitcher plumbing ─────────────────────────────────────────────
 
   Widget _buildSwitcherLayout(
       Widget? currentChild,
@@ -255,9 +219,6 @@ class _OverlaysPanelState extends State<OverlaysPanel>
     }
   }
 
-  // ── Partition ─────────────────────────────────────────────────────────────
-  // Three lines: a bold dark line flanked by two hairlines — gives a clean
-  // "superimposed panel" look matching the screenshot transition zone.
 
   Widget _buildPartition() {
     return Column(
@@ -271,7 +232,6 @@ class _OverlaysPanelState extends State<OverlaysPanel>
     );
   }
 
-  // ── Hero ──────────────────────────────────────────────────────────────────
 
   Widget _buildHero(bool isMobile) {
     return Padding(
@@ -302,7 +262,6 @@ class _OverlaysPanelState extends State<OverlaysPanel>
     );
   }
 
-  // ── Feature grid ──────────────────────────────────────────────────────────
 
   Widget _buildFeaturesGrid(bool isMobile) {
     final rows = <List<_Feature>>[];
@@ -376,7 +335,6 @@ class _OverlaysPanelState extends State<OverlaysPanel>
   }
 }
 
-// ─── Animated row reveal ──────────────────────────────────────────────────────
 
 class _AnimatedRow extends StatefulWidget {
   final bool     revealed;
@@ -435,7 +393,6 @@ class _AnimatedRowState extends State<_AnimatedRow>
   );
 }
 
-// ─── Feature card ─────────────────────────────────────────────────────────────
 
 class _FeatureCard extends StatelessWidget {
   final _Feature feature;
@@ -494,7 +451,6 @@ class _FeatureCard extends StatelessWidget {
   }
 }
 
-// ─── "See developer docs" button ─────────────────────────────────────────────
 
 class _DocsButton extends StatefulWidget {
   final VoidCallback? onTap;

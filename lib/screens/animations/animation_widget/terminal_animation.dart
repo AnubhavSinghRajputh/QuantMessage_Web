@@ -3,11 +3,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-/// A single line/block rendered inside the terminal body.
-///
-/// The terminal plays through a list of [TerminalLine]s in order, typing
-/// each one out character-by-character (when [animateTyping] is true) before
-/// moving on to the next, with [delayBefore] as a pause beforehand.
 class TerminalLine {
   const TerminalLine({
     required this.type,
@@ -21,52 +16,35 @@ class TerminalLine {
   final TerminalLineType type;
   final String text;
 
-  /// Pause before this line starts appearing.
   final Duration delayBefore;
 
-  /// Whether to type this line out character-by-character, or show it
-  /// instantly once its turn comes up.
   final bool animateTyping;
 
-  /// Delay between each character when [animateTyping] is true.
   final Duration typingSpeed;
 
-  /// Extra pause once the line has fully appeared, before moving to the
-  /// next line.
   final Duration holdAfter;
 }
 
 enum TerminalLineType {
-  /// The highlighted "> ..." user-typed prompt block.
   userPrompt,
 
-  /// A plain bullet line, e.g. "I'll explore the codebase...".
   bullet,
 
-  /// A tool-call line with a small status dot, e.g. "Explore(...)".
   toolCall,
 
-  /// The indented "Done (...)" status line under a tool call.
   toolResult,
 
-  /// The pulsing "Claud-ing... (esc to interrupt)" busy indicator.
   busyIndicator,
 
-  /// A bold section heading in the response, e.g. "TaskFlow API - ...".
   heading,
 
-  /// A plain paragraph of response text.
   paragraph,
 
-  /// A monospace file-tree row, e.g. "├─ src/".
   fileTreeRow,
 
-  /// Empty vertical spacing.
   spacer,
 }
 
-/// A reusable, self-playing terminal/chat animation styled after a coding
-/// assistant CLI, wrapped in a soft rounded card background.
 class TerminalAnimation extends StatefulWidget {
   const TerminalAnimation({
     super.key,
@@ -93,46 +71,34 @@ class TerminalAnimation extends StatefulWidget {
     this.autoStart = true,
   });
 
-  /// Overall footprint of the widget (the sage card). The terminal window
-  /// is inset within it.
   final double width;
   final double height;
 
-  /// Branding shown at the top of the terminal (replaces "Claude").
   final String brandName;
   final String brandVersion;
   final String brandSubtitle;
   final String workingDirectory;
 
-  /// Outer rounded card color (the sage-green background in the reference).
   final Color cardColor;
 
-  /// Terminal window background.
   final Color windowColor;
 
-  /// Accent used for the brand glyph, busy indicator, and highlights.
   final Color accentColor;
 
-  /// Title bar strip color at the top of the terminal window.
   final Color titleBarColor;
 
-  /// Colors of the three macOS-style traffic-light dots, left to right.
   final List<Color> dotColors;
 
-  /// The scripted conversation to play. If null, a sensible default script
-  /// is used (mirrors the reference design).
   final List<TerminalLine>? script;
 
-  /// Whether to restart the whole sequence after it finishes.
   final bool loop;
 
-  /// Pause at the end of a full playthrough before looping.
   final Duration loopPause;
 
   final double borderRadius;
   final double windowBorderRadius;
 
-  /// Whether the animation should begin playing as soon as it mounts.
+
   final bool autoStart;
 
   @override
@@ -648,8 +614,7 @@ class _TerminalAnimationState extends State<TerminalAnimation>
   }
 }
 
-/// Small diamond/star brand glyph, replacing the Claude asterisk mark with
-/// a generic shape so any brand name can sit next to it.
+
 class _BrandGlyph extends StatelessWidget {
   const _BrandGlyph({required this.color});
 
@@ -706,8 +671,7 @@ class _SparkPainter extends CustomPainter {
   double _cos(double a) => _approxCos(a);
   double _sin(double a) => _approxCos(a - 1.5707963267948966);
 
-  // Minimal cosine without importing dart:math (kept self-contained); falls
-  // back to a Taylor approximation accurate enough for an 8-point glyph.
+
   double _approxCos(double x) {
     // Normalize to [-pi, pi]
     const pi = 3.1415926535897932;
@@ -721,8 +685,7 @@ class _SparkPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// Faint, organic topographic-line background painted behind the terminal,
-/// matching the subtle contour texture in the reference card.
+
 class _TopoLinesPainter extends CustomPainter {
   _TopoLinesPainter({required this.color});
 
@@ -761,24 +724,3 @@ class _TopoLinesPainter extends CustomPainter {
       oldDelegate.color != color;
 }
 
-// lib/screens/animation/animation_widget/terminal_animation.dart
-//
-// A reusable, self-playing "AI coding terminal" demo animation.
-//
-// Visually mirrors a dark terminal window sitting inside a soft, rounded
-// card: a tiny brand glyph + version line, a typed user prompt, a sequence
-// of "thinking" / tool-call lines, and a final typed-out response complete
-// with a little file tree — all driven by an internal timeline so it can be
-// dropped into any screen and just plays on its own.
-//
-// Usage:
-// ```dart
-// TerminalAnimation(
-///   width: 600,
-///   height: 420,
-/// )
-/// ```
-//
-// Everything is configurable (brand name, colors, conversation script,
-// sizes) so it can be restyled or reused for a different product without
-// touching internals.

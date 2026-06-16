@@ -144,7 +144,6 @@ class GitHubLogoPainter extends CustomPainter {
     canvas.save();
     canvas.scale(scaleX, scaleY);
 
-    // 1. Draw outer black circle
     final Paint circlePaint = Paint()
       ..color = Colors.black
       ..style = PaintingStyle.fill;
@@ -154,7 +153,6 @@ class GitHubLogoPainter extends CustomPainter {
       ..color = Colors.white
       ..style = PaintingStyle.fill;
 
-    // 2. Draw head & body silhouette
     final Path faceAndBody = Path();
     faceAndBody.moveTo(15, 9.5); // Center dip between ears
     faceAndBody.quadraticBezierTo(12, 9, 9, 6.5); // To left ear tip
@@ -172,11 +170,10 @@ class GitHubLogoPainter extends CustomPainter {
 
     canvas.drawPath(faceAndBody, silhouettePaint);
 
-    // 3. Draw tail with rotation based on hoverValue
+
     final double tailBaseX = 12.0;
     final double tailBaseY = 25.5;
 
-    // Calculate dynamic rotation angle for tail wagging (cycles back and forth)
     final double wagAngle = math.sin(hoverValue * 2 * math.pi) * 16 * math.pi / 180;
 
     canvas.save();

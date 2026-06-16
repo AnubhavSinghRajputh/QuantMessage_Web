@@ -147,7 +147,6 @@ class _GitHubRegisPageState extends State<GitHubRegisPage> with TickerProviderSt
                   ),
                   const SizedBox(height: 50),
 
-                  //  AUTHORIZATION BUTTON
                   FadeInOnTextAnimation(
                     controller: _textController,
                     child: AuraButton(

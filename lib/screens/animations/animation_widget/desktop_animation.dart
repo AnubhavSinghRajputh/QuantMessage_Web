@@ -10,12 +10,12 @@ class DesktopAnimation extends StatelessWidget {
   final Color desktopBackgroundColor;
   final bool showGradient;
 
-  // ── NEW: Size configuration ───────────────────────────────────────────────
-  final double sizeScale;        // Global scale multiplier (0.0 - 1.0)
-  final double fontScale;        // Font scale multiplier (0.0 - 1.0)
-  final double spacingScale;     // Spacing scale multiplier (0.0 - 1.0)
 
-  // ── THEME COLORS (White / Black / Green) ──────────────────────────────────
+  final double sizeScale;
+  final double fontScale;
+  final double spacingScale;
+
+
   static const Color accentPrimary   = Color(0xFF00E676);
   static const Color accentSecondary = Color(0xFF4ADE80);
   static const Color accentTertiary  = Color(0xFF22C55E);
@@ -34,7 +34,7 @@ class DesktopAnimation extends StatelessWidget {
     this.spacingScale = 0.65,
   });
 
-  // ── Helper: scaled value ───────────────────────────────────────────────────
+
   double _s(double value) => value * sizeScale;
   double _fs(double value) => value * fontScale;
   double _ss(double value) => value * spacingScale;
@@ -634,7 +634,7 @@ class _MessageData {
   });
 }
 
-// Custom painter for subtle wave pattern background
+// here is the Custom painter for subtle wave pattern background
 class _WavePatternPainter extends CustomPainter {
   final Color color;
 

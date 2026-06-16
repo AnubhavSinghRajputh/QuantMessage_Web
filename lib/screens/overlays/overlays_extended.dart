@@ -7,9 +7,7 @@ import '../animations/animation_widget/terminal_animation.dart';
 import '../transition_animations.dart';
 import '../buttons/moving_icons_button.dart';
 
-/// Selects which [PremiumTransitions] animation drives the overlay
-/// when pushed as a route, and how it transitions internally when
-/// the body content is swapped via [AnimatedSwitcher].
+
 enum OverlayTransitionType {
   slideRight,
   zoomFade,
@@ -26,7 +24,6 @@ class OverlaysExtended extends StatefulWidget {
   final EdgeInsetsGeometry padding;
   final double? maxWidth;
 
-  // ── Animation configuration ───────────────────────────────────────────────
   final bool animateOnScroll;
   final Duration animationDuration;
   final Duration animationDelay;
@@ -37,34 +34,22 @@ class OverlaysExtended extends StatefulWidget {
   final AnimationController? controller;
   final VoidCallback? onAnimated;
 
-  // ── Size configuration ────────────────────────────────────────────────────
   final double desktopWidthFactor;
   final double desktopAspectRatio;
   final double minDesktopHeight;
   final double maxDesktopHeight;
   final double compactScale;
 
-  // ── Transition configuration ─────────────────────────────────────────
   final OverlayTransitionType transitionType;
   final bool animateContentSwap;
   final Key? contentKey; // change to trigger internal AnimatedSwitcher
 
-  // ── Moving icons (segmented control) configuration ────────────────────────
-  /// Whether to show the [MovingIconsButton] segmented control in the header.
   final bool showSegmentedControl;
 
-  /// Labels for the segmented control. Defaults to Desktop / Terminal / Web & iOS.
-  ///
-  /// The index of the label matching (case-insensitively) "Terminal" is what
-  /// triggers the [TerminalAnimation] preview in [_buildAnimatedBody]. If you
-  /// rename or reorder labels, the lookup is done by text, not position, so
-  /// it keeps working.
   final List<String> segmentLabels;
 
-  /// Index initially selected in the segmented control.
   final int segmentInitialIndex;
 
-  /// Called with (index, label) whenever the segmented control selection changes.
   final void Function(int index, String label)? onSegmentChanged;
 
   const OverlaysExtended({
@@ -103,22 +88,6 @@ class OverlaysExtended extends StatefulWidget {
     this.onSegmentChanged,
   });
 
-  /// Pushes [overlay] as a full-screen route using the matching
-  /// [PremiumTransitions] animation. If [transition] is omitted, the
-  /// overlay's own [transitionType] is used.
-  ///
-  /// Example:
-  /// ```dart
-  /// OverlaysExtended.push(
-  ///   context: context,
-  ///   overlay: OverlaysExtended(
-  ///     title: 'Hello',
-  ///     description: 'World',
-  ///     transitionType: OverlayTransitionType.zoomFade,
-  ///   ),
-  ///   transition: OverlayTransitionType.softFade, // overrides
-  /// );
-  /// ```
   static Future<T?> push<T>({
     required BuildContext context,
     required OverlaysExtended overlay,
@@ -216,8 +185,6 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     widget.onSegmentChanged?.call(index, label);
   }
 
-  /// True when the currently selected segment label is "Terminal"
-  /// (case-insensitive), regardless of its position in [widget.segmentLabels].
   bool get _isTerminalSegmentSelected {
     if (_segmentIndex < 0 || _segmentIndex >= widget.segmentLabels.length) {
       return false;
@@ -331,7 +298,6 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     super.dispose();
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -381,10 +347,6 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     );
   }
 
-  /// Wraps the body in an [AnimatedSwitcher] so that swaps
-  /// (e.g. desktop → terminal preview, desktop → customContent, or any
-  /// rebuild with a new [OverlaysExtended.contentKey]) animate using the
-  /// configured [OverlayTransitionType].
   Widget _buildAnimatedBody() {
     final body = _resolveBody();
 
@@ -403,11 +365,6 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     );
   }
 
-  /// Decides which body content to show. When the "Terminal" segment is
-  /// selected, the [TerminalAnimation] preview swaps in instead of the
-  /// usual desktop preview / custom content. An explicit
-  /// [widget.contentKey] from the caller still drives the [AnimatedSwitcher]
-  /// key above, but this method controls what's actually rendered.
   Widget _resolveBody() {
     if (widget.showSegmentedControl && _isTerminalSegmentSelected) {
       return _buildTerminalSection();
@@ -427,8 +384,6 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     return const SizedBox.shrink();
   }
 
-  /// Aligns incoming and outgoing children to the top, which is
-  /// correct inside a top-aligned [Column].
   Widget _buildSwitcherLayout(
       Widget? currentChild,
       List<Widget> previousChildren,
@@ -442,8 +397,6 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     );
   }
 
-  /// Mirrors the [PremiumTransitions] effect selected by
-  /// [widget.transitionType] inside the [AnimatedSwitcher].
   Widget _buildSwitcherTransition(
       Widget child,
       Animation<double> animation,
@@ -493,7 +446,6 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     }
   }
 
-  // ── Compact header ────────────────────────────────────────────────────────
 
   Widget _buildHeader() {
     return Container(
@@ -576,7 +528,6 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     );
   }
 
-  // ── Compact desktop section ──────────────────────────────────────────────
 
   Widget _buildDesktopSection() {
     return Container(
@@ -597,17 +548,14 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
             double width = constraints.maxWidth * widget.desktopWidthFactor;
             double height = width / widget.desktopAspectRatio;
 
-            // Clamp height
             height = height.clamp(widget.minDesktopHeight, widget.maxDesktopHeight);
 
-            // Mobile adjustments
             if (constraints.maxWidth < 600) {
               width = constraints.maxWidth * 0.95;
               height = width / 1.4; // slightly taller on mobile
               height = height.clamp(220.0, 340.0);
             }
 
-            // Apply global scale
             if (widget.compactScale != 1.0) {
               width  *= widget.compactScale;
               height *= widget.compactScale;
@@ -623,7 +571,6 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     );
   }
 
-  // ── Terminal section (shown when the "Terminal" segment is selected) ─────
 
   Widget _buildTerminalSection() {
     return Container(

@@ -26,10 +26,8 @@ class FeaturesOverlay extends StatefulWidget {
 
 class _FeaturesOverlayState extends State<FeaturesOverlay>
     with TickerProviderStateMixin {
-  // ── Hero typing (medium pace) ──────────────────────────────────────────
   late final AnimationController _heroTypingController;
 
-  // ── Left info block fade-in controllers (3) ───────────────────────────
   late final AnimationController _info1FadeController;
   late final AnimationController _info2FadeController;
   late final AnimationController _info3FadeController;
@@ -40,16 +38,13 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
   late final Animation<Offset>   _info2Slide;
   late final Animation<Offset>   _info3Slide;
 
-  // ── Panel-wide fade-in ────────────────────────────────────────────────
   late final AnimationController _panelFadeController;
   late final Animation<double>   _panelFade;
 
-  // Reveal flags (trigger once as the panel scrolls into view)
   bool _info1Revealed = false;
   bool _info2Revealed = false;
   bool _info3Revealed = false;
 
-  // Track the scroll listener so we can remove it in dispose
   ScrollPosition? _attachedScrollPosition;
   VoidCallback?   _scrollListener;
 
@@ -66,13 +61,11 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
       curve: Curves.easeOut,
     );
 
-    // Hero heading — medium pace
     _heroTypingController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1600),
     );
 
-    // Info block fade-in controllers (cascading)
     _info1FadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 650),
@@ -103,7 +96,6 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
       end:   Offset.zero,
     ).animate(CurvedAnimation(parent: _info3FadeController, curve: Curves.easeOutCubic));
 
-    // Start animations after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _panelFadeController.forward();
@@ -113,7 +105,6 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
   }
 
   void _attachScrollListener() {
-    // Find the nearest scrollable ancestor (the SingleChildScrollView in home)
     final scrollable = Scrollable.maybeOf(context);
     if (scrollable == null) return;
 
@@ -123,7 +114,6 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
     void onScroll() {
       if (!mounted || !controller.hasContentDimensions) return;
 
-      // Get the render box of this widget to compute its position on screen
       final renderBox = context.findRenderObject();
       if (renderBox == null) return;
 
@@ -134,11 +124,8 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
       final scrollOffset   = controller.pixels;
       final viewportHeight = controller.viewportDimension;
 
-      // Distance of this panel's top from the top of the viewport
       final panelTop = offsetToReveal - scrollOffset;
 
-      // Trigger thresholds as the user scrolls down — each block fades
-      // in as it crosses roughly 70-90% down the viewport
       if (!_info1Revealed && panelTop < viewportHeight * 0.75) {
         setState(() => _info1Revealed = true);
         _info1FadeController.forward();
@@ -155,13 +142,11 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
 
     _scrollListener = onScroll;
     controller.addListener(onScroll);
-    // Run once to set initial state if user lands mid-scroll
     onScroll();
   }
 
   @override
   void dispose() {
-    // Clean up the scroll listener if we attached one
     if (_attachedScrollPosition != null && _scrollListener != null) {
       _attachedScrollPosition!.removeListener(_scrollListener!);
     }
@@ -174,7 +159,6 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
     super.dispose();
   }
 
-  // ── Helper: left-accent + bottom border on each info block ─────────────
   Widget _buildInfoBlock({
     required String title,
     required String description,
@@ -237,7 +221,6 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
     );
   }
 
-  // ── Hero block: briefcase + heading + subtitle + downloads ────────────
   Widget _buildHeroBlock(double maxWidth, bool isMobile) {
     final double briefcaseSize = isMobile
         ? math.min(maxWidth * 0.5, 180.0)
@@ -263,7 +246,6 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
           ),
           const SizedBox(height: 24),
 
-          // Hero heading with medium-pace typing
           TypingTextAnimation(
             controller:    _heroTypingController,
             fullText:      '< All In One Messaging Powered By A.I >',
@@ -313,7 +295,6 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
     );
   }
 
-  // ── Download row ───────────────────────────────────────────────────────
   Widget _buildDownloadRow(bool isMobile, double fontSize) {
     final buttons = <Widget>[
       _buildDownloadButton('macOS',           fontSize),
@@ -356,7 +337,6 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
     );
   }
 
-  // ── Download button with hover (white → black with white text) ────────
   Widget _buildDownloadButton(String label, double fontSize) {
     return _HoverSwapButton(
       label:    label,
@@ -365,7 +345,6 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
     );
   }
 
-  // ── Animation box ──────────────────────────────────────────────────────
   Widget _buildAnimationBox({required double height}) {
     return Container(
       width: double.infinity,
@@ -385,7 +364,6 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
     );
   }
 
-  // ── Left column with cascading fade-in info blocks ────────────────────
   Widget _buildLeftColumn() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -417,7 +395,6 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
     );
   }
 
-  // ── Background layer (animated dots + fluid mesh) ──────────────────────
   Widget _buildBackground() {
     if (widget.bgController == null) {
       return Container(color: Colors.black);
@@ -443,10 +420,8 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
       color: Colors.black,
       child: Stack(
         children: [
-          // Layer 0: animated background (uses the same controller as home)
           Positioned.fill(child: _buildBackground()),
 
-          // Layer 1: foreground content
           FadeTransition(
             opacity: _panelFade,
             child: Padding(
@@ -498,7 +473,6 @@ class _FeaturesOverlayState extends State<FeaturesOverlay>
   }
 }
 
-// ─── Hover-swap button (white → black with white text on hover) ────────────
 
 class _HoverSwapButton extends StatefulWidget {
   final String       label;

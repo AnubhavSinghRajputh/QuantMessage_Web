@@ -1,21 +1,4 @@
-// messaging_animation.dart
-// Updated: Black & white theme matching premium_effects.dart
-// Wide rectangular panel for home_screen.dart integration
-//
-// Usage in home_screen.dart:
-//
-//   Row(
-//     crossAxisAlignment: CrossAxisAlignment.center,
-//     children: [
-//       Expanded(child: /* your Early Access column */),
-//       SizedBox(width: 48),
-//       SizedBox(
-//         width: 630,
-//         height: 480,
-//         child: MessagingAnimation(),
-//       ),
-//     ],
-//   )
+
 
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -39,7 +22,7 @@ class _MessagingAnimationState extends State<MessagingAnimation>
   static const String _labelLeft  = 'QM USER A';
   static const String _labelRight = 'QM USER B';
 
-  // ── B&W palette (mirrors premium_effects.dart dark base) ──────────────────
+
   static const Color _panelBg      = Color(0xFF070709);   // same as baseColor
   static const Color _borderColor  = Color(0x1AFFFFFF);   // white @ 10%
   static const Color _nodeBg       = Color(0xFF12121A);   // same as radial mid
@@ -48,7 +31,7 @@ class _MessagingAnimationState extends State<MessagingAnimation>
   static const Color _dotWhite     = Colors.white;
   static const Color _accentWhite  = Color(0xFFF5F5F5);   // faint white accent
 
-  // Bubble colours: white, grey, faint-white — matching InteractiveFluidPainter cycle
+
   static const List<Color> _bubbleColors = [
     Color(0xFFFFFFFF), // white
     Color(0xFFBDBDBD), // greyish white
@@ -138,7 +121,7 @@ class _MessagingAnimationState extends State<MessagingAnimation>
         width:  w,
         height: h,
         decoration: BoxDecoration(
-          // Radial gradient background identical to MovingDotsPainter
+
           gradient: const RadialGradient(
             center: Alignment(0.0, -0.35),
             radius: 1.2,
@@ -155,13 +138,13 @@ class _MessagingAnimationState extends State<MessagingAnimation>
         clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
-            // Subtle grid — same low opacity as premium_effects dots
+
             CustomPaint(
               size: Size(w, h),
               painter: _GridPainter(),
             ),
 
-            // Animated message bubbles
+
             CustomPaint(
               size: Size(w, h),
               painter: _BubblePainter(
@@ -187,7 +170,7 @@ class _MessagingAnimationState extends State<MessagingAnimation>
               ),
             ),
 
-            // Right node
+
             Positioned(
               right: 14,
               top:   h / 2 - 52,
@@ -203,7 +186,7 @@ class _MessagingAnimationState extends State<MessagingAnimation>
               ),
             ),
 
-            // Top badge — styled like CirculatingAura label
+
             Positioned(
               top:   16,
               left:  0,
@@ -245,9 +228,6 @@ class _MessagingAnimationState extends State<MessagingAnimation>
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Bubble data model
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _BubbleData {
   double progress;
@@ -266,10 +246,6 @@ class _BubbleData {
     required this.colorVariant,
   });
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Bubble painter — B&W variant
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _BubblePainter extends CustomPainter {
   final List<_BubbleData> bubbles;
@@ -321,7 +297,7 @@ class _BubblePainter extends CustomPainter {
         ..style = PaintingStyle.stroke;
       canvas.drawLine(Offset(x + trailDx, y), Offset(x, y), trailPaint);
 
-      // Pill text
+
       final textPainter = TextPainter(
         text: TextSpan(
           text: b.snippet,
@@ -342,7 +318,7 @@ class _BubblePainter extends CustomPainter {
         const Radius.circular(6),
       );
 
-      // Soft glow (very subtle — matches MovingDotsPainter accent glow)
+
       canvas.drawRRect(
         pillRect.inflate(3),
         Paint()
@@ -350,7 +326,7 @@ class _BubblePainter extends CustomPainter {
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
       );
 
-      // Pill background: very dark with slight white tint
+
       canvas.drawRRect(
         pillRect,
         Paint()
@@ -382,9 +358,6 @@ class _BubblePainter extends CustomPainter {
   bool shouldRepaint(covariant _BubblePainter oldDelegate) => true;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Grid painter — same subtle grid as premium_effects background feel
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _GridPainter extends CustomPainter {
   @override
@@ -405,10 +378,6 @@ class _GridPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// System node — B&W, matches CirculatingAura glow style
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _SystemNode extends StatelessWidget {
   final String label;
@@ -444,7 +413,7 @@ class _SystemNode extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Circulating-aura-style glow box
+
               Container(
                 width:  54,
                 height: 54,
@@ -480,7 +449,7 @@ class _SystemNode extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              // Activity dots — white, matching MovingDotsPainter accent dots
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(3, (i) {
@@ -509,9 +478,7 @@ class _SystemNode extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Bottom stats bar — B&W
-// ─────────────────────────────────────────────────────────────────────────────
+
 
 class _StatsBar extends StatefulWidget {
   final AnimationController masterController;
