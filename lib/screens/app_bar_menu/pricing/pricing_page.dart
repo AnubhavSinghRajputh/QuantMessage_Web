@@ -122,7 +122,7 @@ class PricingPage extends StatefulWidget {
 }
 
 class _PricingPageState extends State<PricingPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
 
   late final AnimationController _heroCtrl;
 
