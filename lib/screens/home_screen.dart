@@ -17,6 +17,7 @@ import 'buttons/github_button.dart';
 import 'bottom_info/bottom_info.dart';
 import 'animations/messaging_animation.dart';
 import 'animations/computing_animation.dart';
+import 'animations/features_web_animations.dart';
 import 'overlays/overlays_pannel.dart';
 import 'overlays/features_overlay.dart';
 import 'overlays/overlays_extended.dart';
@@ -45,6 +46,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _featuresController;
   late Animation<double>   _featuresFadeAnimation;
 
+  late AnimationController _featuresWebController;
+  late Animation<double>   _featuresWebFadeAnimation;
+
   late AnimationController _overlaysPanelController;
   late Animation<double>   _overlaysPanelFade;
   late Animation<Offset>   _overlaysPanelSlide;
@@ -56,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool _earlyAccessAnimated        = false;
   bool _computingAnimated          = false;
   bool _descriptionAnimated        = false;
+  bool _featuresWebAnimated        = false;
   bool _featuresAnimated           = false;
   bool _overlaysPanelAnimated      = false;
 
@@ -99,6 +104,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _descriptionController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
+    );
+
+    _featuresWebController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _featuresWebFadeAnimation = CurvedAnimation(
+      parent: _featuresWebController,
+      curve: Curves.easeOut,
     );
 
     _featuresController = AnimationController(
@@ -156,6 +170,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       setState(() => _overlaysPanelAnimated = true);
       _overlaysPanelController.forward();
     }
+    if (offset > 2000 && !_featuresWebAnimated) {
+      setState(() => _featuresWebAnimated = true);
+      _featuresWebController.forward();
+    }
     if (offset > 2400 && !_featuresAnimated) {
       setState(() => _featuresAnimated = true);
       _featuresController.forward();
@@ -164,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _checkScrollPosition() {
     if (!mounted) return;
-    final sh = MediaQuery.of(context).size.height;
+    final sh = MediaQuery.sizeOf(context).height;
     if (_scrollController.offset > 150 || sh > sh * 0.8 + 100) {
       if (!_earlyAccessAnimated) {
         setState(() => _earlyAccessAnimated = true);
@@ -180,8 +198,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _earlyAccessController.dispose();
     _betaTextController.dispose();
     _descriptionController.dispose();
+    _featuresWebController.dispose();
     _featuresController.dispose();
     _overlaysPanelController.dispose();
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     _accessCodeController.dispose();
     super.dispose();
@@ -239,8 +259,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth     = MediaQuery.of(context).size.width;
-    final bool   isMobile        = screenWidth < 1100;
+    final Size   screenSize     = MediaQuery.sizeOf(context);
+    final double screenWidth    = screenSize.width;
+    final bool   isMobile       = screenWidth < 1100;
     final double headlineSize    = isMobile ? 40 : 72;
     final double subHeadlineSize = isMobile ? 14 : 18;
     final double sectionTitleSz  = isMobile ? 40 : 72;
@@ -269,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.8,
+                      height: screenSize.height * 0.8,
                       child: Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -512,6 +533,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   const _OverlaysExtendedSection(),
 
 
+                  // < Capabilities > — visual web of what QuantMessage can do,
+                  // shown ahead of the FeaturesOverlay so the categories/
+                  // sub-categories register before the detailed cards below.
+                  AnimatedOpacity(
+                    opacity: _featuresWebAnimated ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 800),
+                    child: FadeTransition(
+                      opacity: _featuresWebFadeAnimation,
+                      child: _FeaturesWebSection(isMobile: isMobile),
+                    ),
+                  ),
+
+
                   FadeTransition(
                     opacity: _featuresFadeAnimation,
                     child: FeaturesOverlay(
@@ -711,6 +745,60 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         const SizedBox(width: 8),
         Icon(icon, size: 16, color: textColor),
       ],
+    );
+  }
+}
+
+
+
+/// Section wrapping FeaturesWebAnimation with a heading, sized responsively
+/// so the orbiting web doesn't overflow on narrow screens.
+class _FeaturesWebSection extends StatelessWidget {
+  final bool isMobile;
+
+  const _FeaturesWebSection({required this.isMobile});
+
+  @override
+  Widget build(BuildContext context) {
+    final double webSize = isMobile ? 340 : 460;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 24),
+      child: Column(
+        children: [
+          Text(
+            '< What QuantMessage powers >',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: isMobile ? 28 : 44,
+              fontWeight: FontWeight.bold,
+              fontFamily: '__copernicus_669e4a',
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'One agentic core, fanning out across every discipline your team touches.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.45),
+              fontSize: isMobile ? 13 : 16,
+              fontWeight: FontWeight.w300,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 40),
+          Center(
+            child: FeaturesWebAnimation(
+              size: webSize,
+              useDarkTheme: true,
+              duration: const Duration(seconds: 14),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -2,17 +2,16 @@
 
 import 'package:flutter/material.dart';
 import '../../premium_effects.dart';
+import '../../transition_animations.dart';
 import '../../button_buldge.dart';
-// import 'transition_animations.dart';
-import '../../animations/pendulum_animation.dart';
 
 enum BillingCycle { monthly, yearly }
 
 class PricingPlan {
   final String       name;
   final String       tagline;
-  final double       monthlyPrice;          // in INR (₹)
-  final double       yearlyDiscountPct;      // e.g. 0.20 == 20% off monthly rate
+  final double       monthlyPrice;
+  final double       yearlyDiscountPct;
   final List<String> features;
   final bool         highlighted;
   final bool         isAddOn;
@@ -34,12 +33,11 @@ class PricingPlan {
   double priceFor(BillingCycle cycle) {
     if (monthlyPrice == 0) return 0;
     if (cycle == BillingCycle.monthly) return monthlyPrice;
-    final discounted = monthlyPrice * (1 - yearlyDiscountPct);
-    return discounted;
+    return monthlyPrice * (1 - yearlyDiscountPct);
   }
 
-  /// Total billed amount for the cycle (yearly is charged as 12x the
-  /// discounted monthly rate, upfront).
+  /// Total billed amount for the cycle (yearly is charged upfront as
+  /// 12x the discounted monthly rate).
   double totalFor(BillingCycle cycle) {
     final perMonth = priceFor(cycle);
     return cycle == BillingCycle.yearly ? perMonth * 12 : perMonth;
@@ -127,17 +125,15 @@ class _PricingPageState extends State<PricingPage>
     with SingleTickerProviderStateMixin {
 
   late final AnimationController _heroCtrl;
-  late final Animation<double>   _heroFade;
-  late final Animation<Offset>   _heroSlide;
 
   BillingCycle _cycle    = BillingCycle.monthly;
   PricingPlan  _selected = _plans[2]; // default to Prime (highlighted plan)
   bool         _addOnSelected = false;
 
-  final GlobalKey _bodyKey = GlobalKey();
   Key _swapKey = const ValueKey('plans_grid_v1');
 
-  // animation controller
+  // drives PremiumBackgroundStack's moving dots + fluid mesh,
+  // and also any CirculatingAura / AuraButton on this page
   late final AnimationController _bgController;
 
   @override
@@ -146,19 +142,8 @@ class _PricingPageState extends State<PricingPage>
 
     _heroCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 900),
     );
-    _heroFade = CurvedAnimation(
-      parent: _heroCtrl,
-      curve: Curves.easeOut,
-    );
-    _heroSlide = Tween<Offset>(
-      begin: const Offset(0, 0.06),
-      end:   Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _heroCtrl,
-      curve: Curves.easeOutCubic,
-    ));
 
     _bgController = AnimationController(
       vsync: this,
@@ -206,7 +191,7 @@ class _PricingPageState extends State<PricingPage>
               '— ₹${_totalDue.toStringAsFixed(0)} ${_cycle == BillingCycle.yearly ? "/ year" : "/ month"}.',
           style: const TextStyle(color: Colors.white),
         ),
-        backgroundColor: const Color(0xFF1A1A1F),
+        backgroundColor: const Color(0xFF15151B),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -219,26 +204,30 @@ class _PricingPageState extends State<PricingPage>
     final isMobile = screenW < 900;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F5),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _buildHeader(isMobile),
-              const SizedBox(height: 40),
-              _buildBillingToggle(),
-              const SizedBox(height: 40),
-              _buildPlansGrid(isMobile),
-              const SizedBox(height: 28),
-              _buildAddOnCard(isMobile),
-              const SizedBox(height: 40),
-              _buildContinueBar(isMobile),
-              const SizedBox(height: 40),
-              _buildFooterNote(),
-            ],
+      backgroundColor: const Color(0xFF070709),
+      body: PremiumBackgroundStack(
+        bgController: _bgController,
+        baseColor: const Color(0xFF070709),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _buildHeader(isMobile),
+                const SizedBox(height: 40),
+                _buildBillingToggle(),
+                const SizedBox(height: 40),
+                _buildPlansGrid(isMobile),
+                const SizedBox(height: 28),
+                _buildAddOnCard(isMobile),
+                const SizedBox(height: 40),
+                _buildContinueBar(isMobile),
+                const SizedBox(height: 40),
+                _buildFooterNote(),
+              ],
+            ),
           ),
         ),
       ),
@@ -248,44 +237,34 @@ class _PricingPageState extends State<PricingPage>
   // header
 
   Widget _buildHeader(bool isMobile) {
-    return FadeTransition(
-      opacity: _heroFade,
-      child: SlideTransition(
-        position: _heroSlide,
-        child: Column(
-          children: [
-            const PendulumAnimation(size: 72, color: Color(0xFF0D0D0D)),
-            const SizedBox(height: 28),
-            Text(
-              '< Pricing >',
+    return FadeInOnTextAnimation(
+      controller: _heroCtrl,
+      child: Column(
+        children: [
+          AuraHeadline(
+            controller: _heroCtrl,
+            auraController: _bgController,
+            fullText: 'Pricing',
+            highlightPart: 'Pricing',
+            borderRadius: 24,
+          ),
+          const SizedBox(height: 18),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 640),
+            child: Text(
+              'Simple, transparent pricing for QuantMessage. Start free, upgrade anytime.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily:    '__copernicus_669e4a',
-                fontSize:      isMobile ? 34 : 56,
-                fontWeight:    FontWeight.w800,
-                color:         const Color(0xFF0D0D0D),
-                height:        1.1,
-                letterSpacing: -1.0,
+                fontFamily:  'Inter',
+                fontSize:    isMobile ? 15 : 18,
+                fontWeight:  FontWeight.w400,
+                color:       Colors.white.withOpacity(0.55),
+                height:      1.5,
+                letterSpacing: 0.1,
               ),
             ),
-            const SizedBox(height: 18),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640),
-              child: Text(
-                'Simple, transparent pricing for QuantMessage. Start free, upgrade anytime.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily:  'Inter',
-                  fontSize:    isMobile ? 15 : 18,
-                  fontWeight:  FontWeight.w400,
-                  color:       const Color(0xFF0D0D0D).withOpacity(0.55),
-                  height:      1.5,
-                  letterSpacing: 0.1,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -294,18 +273,11 @@ class _PricingPageState extends State<PricingPage>
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(50),
         border: Border.all(
-          color: const Color(0xFF1A1A1A).withOpacity(0.08),
+          color: Colors.white.withOpacity(0.08),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -319,26 +291,30 @@ class _PricingPageState extends State<PricingPage>
 
   Widget _buildToggleChip(BillingCycle cycle, String label) {
     final selected = _cycle == cycle;
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => setState(() => _cycle = cycle),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOut,
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
-          decoration: BoxDecoration(
-            color: selected ? const Color(0xFF0D0D0D) : Colors.transparent,
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontFamily:  'Inter',
-              fontSize:    13,
-              fontWeight:  FontWeight.w600,
-              color:       selected ? Colors.white : const Color(0xFF0D0D0D).withOpacity(0.7),
-              letterSpacing: 0.3,
+    return ButtonBulge(
+      hoverScale: 1.03,
+      pressedScale: 0.96,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () => setState(() => _cycle = cycle),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOut,
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+            decoration: BoxDecoration(
+              color: selected ? Colors.white : Colors.transparent,
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontFamily:  'Inter',
+                fontSize:    13,
+                fontWeight:  FontWeight.w600,
+                color:       selected ? Colors.black : Colors.white.withOpacity(0.7),
+                letterSpacing: 0.3,
+              ),
             ),
           ),
         ),
@@ -365,6 +341,61 @@ class _PricingPageState extends State<PricingPage>
               ),
             ))
                 .toList(),
+          );
+        }
+        // 2x2 grid between mobile and ultra-wide; single row beyond ~1100px
+        final useTwoColumns = width < 1100;
+        if (useTwoColumns) {
+          return Column(
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 9),
+                    child: _PlanCard(
+                      plan: _plans[0], cycle: _cycle,
+                      isSelected: _selected.name == _plans[0].name,
+                      onSelect: () => _selectPlan(_plans[0]),
+                      bgController: _bgController,
+                    ),
+                  )),
+                  Expanded(child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 9),
+                    child: _PlanCard(
+                      plan: _plans[1], cycle: _cycle,
+                      isSelected: _selected.name == _plans[1].name,
+                      onSelect: () => _selectPlan(_plans[1]),
+                      bgController: _bgController,
+                    ),
+                  )),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 9),
+                    child: _PlanCard(
+                      plan: _plans[2], cycle: _cycle,
+                      isSelected: _selected.name == _plans[2].name,
+                      onSelect: () => _selectPlan(_plans[2]),
+                      bgController: _bgController,
+                    ),
+                  )),
+                  Expanded(child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 9),
+                    child: _PlanCard(
+                      plan: _plans[3], cycle: _cycle,
+                      isSelected: _selected.name == _plans[3].name,
+                      onSelect: () => _selectPlan(_plans[3]),
+                      bgController: _bgController,
+                    ),
+                  )),
+                ],
+              ),
+            ],
           );
         }
         return Row(
@@ -409,100 +440,97 @@ class _PricingPageState extends State<PricingPage>
 
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 680),
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: _toggleAddOn,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOut,
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: _addOnSelected
-                    ? const Color(0xFFFF8A50)
-                    : const Color(0xFF1A1A1A).withOpacity(0.08),
-                width: _addOnSelected ? 1.6 : 1,
+      child: ButtonBulge(
+        hoverScale: 1.02,
+        pressedScale: 0.98,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: _toggleAddOn,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.04),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: _addOnSelected
+                      ? Colors.greenAccent.withOpacity(0.7)
+                      : Colors.white.withOpacity(0.08),
+                  width: _addOnSelected ? 1.6 : 1,
+                ),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0D0D0D).withOpacity(0.05),
-                    shape: BoxShape.circle,
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.06),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.block_outlined, size: 17, color: Colors.white),
                   ),
-                  child: const Icon(Icons.block_outlined, size: 17, color: Color(0xFF0D0D0D)),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'No Ads add-on',
-                        style: TextStyle(
-                          fontFamily:  'Inter',
-                          fontSize:    14.5,
-                          fontWeight:  FontWeight.w700,
-                          color:       Color(0xFF0D0D0D),
-                          letterSpacing: 0.1,
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'No Ads add-on',
+                          style: TextStyle(
+                            fontFamily:  'Inter',
+                            fontSize:    14.5,
+                            fontWeight:  FontWeight.w700,
+                            color:       Colors.white,
+                            letterSpacing: 0.1,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Remove ads from your plan',
-                        style: TextStyle(
-                          fontFamily:  'Inter',
-                          fontSize:    12.5,
-                          fontWeight:  FontWeight.w400,
-                          color:       const Color(0xFF0D0D0D).withOpacity(0.55),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Remove ads from your plan',
+                          style: TextStyle(
+                            fontFamily:  'Inter',
+                            fontSize:    12.5,
+                            fontWeight:  FontWeight.w400,
+                            color:       Colors.white.withOpacity(0.55),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                Text(
-                  price == 0 ? 'Free' : '₹${price.toStringAsFixed(0)} / mo',
-                  style: const TextStyle(
-                    fontFamily:  'Inter',
-                    fontSize:    14,
-                    fontWeight:  FontWeight.w700,
-                    color:       Color(0xFF0D0D0D),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _addOnSelected ? const Color(0xFFFF8A50) : Colors.transparent,
-                    border: Border.all(
-                      color: _addOnSelected
-                          ? const Color(0xFFFF8A50)
-                          : const Color(0xFF0D0D0D).withOpacity(0.25),
-                      width: 1.4,
+                      ],
                     ),
                   ),
-                  child: _addOnSelected
-                      ? const Icon(Icons.check, size: 14, color: Colors.white)
-                      : null,
-                ),
-              ],
+                  Text(
+                    price == 0 ? 'Free' : '₹${price.toStringAsFixed(0)} / mo',
+                    style: const TextStyle(
+                      fontFamily:  'Inter',
+                      fontSize:    14,
+                      fontWeight:  FontWeight.w700,
+                      color:       Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _addOnSelected ? Colors.greenAccent : Colors.transparent,
+                      border: Border.all(
+                        color: _addOnSelected
+                            ? Colors.greenAccent
+                            : Colors.white.withOpacity(0.25),
+                        width: 1.4,
+                      ),
+                    ),
+                    child: _addOnSelected
+                        ? const Icon(Icons.check, size: 14, color: Colors.black)
+                        : null,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -548,16 +576,16 @@ class _PricingPageState extends State<PricingPage>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(50),
             border: Border.all(
-              color: const Color(0xFF1A1A1A).withOpacity(0.08),
+              color: Colors.white.withOpacity(0.08),
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.check_circle, size: 16, color: Color(0xFF0D0D0D)),
+              const Icon(Icons.check_circle, size: 16, color: Colors.greenAccent),
               const SizedBox(width: 8),
               Text(
                 'Selected: ${_selected.name}'
@@ -567,7 +595,7 @@ class _PricingPageState extends State<PricingPage>
                   fontFamily:  'Inter',
                   fontSize:    13,
                   fontWeight:  FontWeight.w600,
-                  color:       Color(0xFF0D0D0D),
+                  color:       Colors.white,
                   letterSpacing: 0.2,
                 ),
               ),
@@ -589,7 +617,7 @@ class _PricingPageState extends State<PricingPage>
           fontFamily:  'Inter',
           fontSize:    12.5,
           fontWeight:  FontWeight.w400,
-          color:       const Color(0xFF0D0D0D).withOpacity(0.45),
+          color:       Colors.white.withOpacity(0.45),
           height:      1.5,
         ),
       ),
@@ -625,58 +653,63 @@ class _PlanCardState extends State<_PlanCard> {
   Widget build(BuildContext context) {
     final highlighted = widget.plan.highlighted;
 
+    final cardBody = AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+      padding: const EdgeInsets.all(26),
+      decoration: BoxDecoration(
+        color: highlighted
+            ? Colors.white.withOpacity(0.06)
+            : Colors.white.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: widget.isSelected
+              ? Colors.greenAccent.withOpacity(0.7)
+              : Colors.white.withOpacity(_hovered ? 0.18 : 0.08),
+          width: widget.isSelected ? 1.6 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildHeader(),
+          const SizedBox(height: 18),
+          _buildPrice(),
+          const SizedBox(height: 22),
+          Divider(height: 1, color: Colors.white.withOpacity(0.08)),
+          const SizedBox(height: 18),
+          _buildFeatures(),
+          const SizedBox(height: 26),
+          _buildCTA(highlighted),
+        ],
+      ),
+    );
+
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit:  (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: widget.onSelect,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
-          padding: const EdgeInsets.all(26),
-          decoration: BoxDecoration(
-            color: highlighted ? const Color(0xFF0D0D0D) : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: widget.isSelected
-                  ? const Color(0xFFFF8A50)
-                  : const Color(0xFF1A1A1A).withOpacity(_hovered ? 0.18 : 0.08),
-              width: widget.isSelected ? 1.6 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(_hovered ? 0.10 : 0.05),
-                blurRadius: _hovered ? 28 : 18,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildHeader(highlighted),
-              const SizedBox(height: 18),
-              _buildPrice(highlighted),
-              const SizedBox(height: 22),
-              const Divider(
-                height: 1,
-                color: Color(0x1A1A1A1A),
-              ),
-              const SizedBox(height: 18),
-              _buildFeatures(highlighted),
-              const SizedBox(height: 26),
-              _buildCTA(highlighted),
-            ],
-          ),
-        ),
+        // Highlighted (Prime) plan gets the circulating aura border to
+        // visually call it out, matching CirculatingAura from premium_effects.
+        child: highlighted
+            ? CirculatingAura(
+          controller: widget.bgController,
+          borderRadius: 20,
+          padding: const EdgeInsets.all(3),
+          glowColor: Colors.white,
+          accentColor: Colors.greenAccent,
+          child: cardBody,
+        )
+            : cardBody,
       ),
     );
   }
 
-  Widget _buildHeader(bool highlighted) {
-    final fg = highlighted ? Colors.white : const Color(0xFF0D0D0D);
-    final sub = (highlighted ? Colors.white : const Color(0xFF0D0D0D)).withOpacity(0.6);
+  Widget _buildHeader() {
+    const fg = Colors.white;
+    final sub = Colors.white.withOpacity(0.6);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -685,9 +718,7 @@ class _PlanCardState extends State<_PlanCard> {
           width:  38,
           height: 38,
           decoration: BoxDecoration(
-            color: highlighted
-                ? Colors.white.withOpacity(0.08)
-                : const Color(0xFF0D0D0D).withOpacity(0.05),
+            color: Colors.white.withOpacity(0.08),
             shape: BoxShape.circle,
           ),
           child: Icon(widget.plan.icon, color: fg, size: 18),
@@ -699,8 +730,8 @@ class _PlanCardState extends State<_PlanCard> {
             children: [
               Text(
                 widget.plan.name,
-                style: TextStyle(
-                  fontFamily:    '__copernicus_669e4a',
+                style: const TextStyle(
+                  fontFamily:    'Inter',
                   fontSize:      20,
                   fontWeight:    FontWeight.w700,
                   color:         fg,
@@ -721,11 +752,11 @@ class _PlanCardState extends State<_PlanCard> {
             ],
           ),
         ),
-        if (highlighted)
+        if (widget.plan.highlighted)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF8A50),
+              color: Colors.greenAccent.withOpacity(0.85),
               borderRadius: BorderRadius.circular(50),
             ),
             child: const Text(
@@ -734,7 +765,7 @@ class _PlanCardState extends State<_PlanCard> {
                 fontFamily:  'Inter',
                 fontSize:    9,
                 fontWeight:  FontWeight.w700,
-                color:       Colors.white,
+                color:       Colors.black,
                 letterSpacing: 0.8,
               ),
             ),
@@ -743,10 +774,10 @@ class _PlanCardState extends State<_PlanCard> {
     );
   }
 
-  Widget _buildPrice(bool highlighted) {
+  Widget _buildPrice() {
     final price  = widget.plan.priceFor(widget.cycle);
-    final fg     = highlighted ? Colors.white : const Color(0xFF0D0D0D);
-    final sub    = (highlighted ? Colors.white : const Color(0xFF0D0D0D)).withOpacity(0.55);
+    const fg     = Colors.white;
+    final sub    = Colors.white.withOpacity(0.55);
     final isFree = price == 0;
 
     return Row(
@@ -754,8 +785,8 @@ class _PlanCardState extends State<_PlanCard> {
       children: [
         Text(
           isFree ? 'Free' : '₹${price.toStringAsFixed(0)}',
-          style: TextStyle(
-            fontFamily:    '__copernicus_669e4a',
+          style: const TextStyle(
+            fontFamily:    'Inter',
             fontSize:      38,
             fontWeight:    FontWeight.w800,
             color:         fg,
@@ -784,7 +815,7 @@ class _PlanCardState extends State<_PlanCard> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFF4ADE80).withOpacity(0.15),
+              color: Colors.greenAccent.withOpacity(0.15),
               borderRadius: BorderRadius.circular(50),
             ),
             child: const Text(
@@ -793,7 +824,7 @@ class _PlanCardState extends State<_PlanCard> {
                 fontFamily:  'Inter',
                 fontSize:    10,
                 fontWeight:  FontWeight.w700,
-                color:       Color(0xFF4ADE80),
+                color:       Colors.greenAccent,
                 letterSpacing: 0.4,
               ),
             ),
@@ -802,8 +833,8 @@ class _PlanCardState extends State<_PlanCard> {
     );
   }
 
-  Widget _buildFeatures(bool highlighted) {
-    final fg = highlighted ? Colors.white : const Color(0xFF0D0D0D);
+  Widget _buildFeatures() {
+    const fg = Colors.white;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -813,11 +844,7 @@ class _PlanCardState extends State<_PlanCard> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.check,
-                size:  16,
-                color: highlighted ? const Color(0xFFFF8A50) : const Color(0xFF0D0D0D),
-              ),
+              const Icon(Icons.check, size: 16, color: Colors.greenAccent),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -846,7 +873,8 @@ class _PlanCardState extends State<_PlanCard> {
           child: AuraButton(
             onPressed: widget.onSelect,
             auraController: widget.bgController,
-            width: 180, height: 40,
+            width: 180,
+            height: 40,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
@@ -871,32 +899,26 @@ class _PlanCardState extends State<_PlanCard> {
     }
     return SizedBox(
       width: double.infinity,
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit:  (_) => setState(() => _hovered = false),
-        child: OutlinedButton(
+      child: ButtonBulge(
+        hoverScale: 1.02,
+        pressedScale: 0.97,
+        child: AuraButton(
           onPressed: widget.onSelect,
+          auraController: widget.bgController,
+          outlined: true,
+          height: 44,
           style: OutlinedButton.styleFrom(
-            side: BorderSide(
-              color: const Color(0xFF0D0D0D).withOpacity(_hovered ? 1.0 : 0.28),
-              width: 1.2,
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            foregroundColor: Colors.white,
+            side: BorderSide(color: Colors.white.withOpacity(_hovered ? 0.6 : 0.28)),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-            backgroundColor:
-            _hovered ? const Color(0xFF0D0D0D) : Colors.transparent,
           ),
-          child: AnimatedDefaultTextStyle(
-            duration: const Duration(milliseconds: 200),
-            style: TextStyle(
+          child: Text(
+            widget.isSelected ? 'Selected' : 'Choose ${widget.plan.name}',
+            style: const TextStyle(
               fontFamily:  'Inter',
               fontSize:    13,
               fontWeight:  FontWeight.w600,
-              color:       _hovered ? Colors.white : const Color(0xFF0D0D0D),
               letterSpacing: 0.4,
-            ),
-            child: Text(
-              widget.isSelected ? 'Selected' : 'Choose ${widget.plan.name}',
             ),
           ),
         ),

@@ -24,7 +24,6 @@ class _ButtonBulgeState extends State<ButtonBulge> {
 
   @override
   Widget build(BuildContext context) {
-    // Determine the current scale based on state
     double currentScale = 1.0;
     if (_isPressed) {
       currentScale = widget.pressedScale;
