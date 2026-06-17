@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../premium_effects.dart';
 import '../../transition_animations.dart';
 import '../../button_buldge.dart';
+import '../../home_animation.dart';
 
 enum BillingCycle { monthly, yearly }
 
@@ -199,36 +200,47 @@ class _PricingPageState extends State<PricingPage>
 
   @override
   Widget build(BuildContext context) {
-    final screenW  = MediaQuery.of(context).size.width;
+    final screenW  = MediaQuery.sizeOf(context).width;
     final isMobile = screenW < 900;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF070709),
-      body: PremiumBackgroundStack(
-        bgController: _bgController,
-        baseColor: const Color(0xFF070709),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _buildHeader(isMobile),
-                const SizedBox(height: 40),
-                _buildBillingToggle(),
-                const SizedBox(height: 40),
-                _buildPlansGrid(isMobile),
-                const SizedBox(height: 28),
-                _buildAddOnCard(isMobile),
-                const SizedBox(height: 40),
-                _buildContinueBar(isMobile),
-                const SizedBox(height: 40),
-                _buildFooterNote(),
-              ],
+      backgroundColor: const Color(0xFF020205),
+      body: Stack(
+        children: [
+
+          const HomeAnimation(),
+
+
+          PremiumBackgroundStack(
+            bgController: _bgController,
+            showMovingDots: true,
+            baseColor: const Color(0xFF070709),
+            child: const SizedBox.expand(),
+          ),
+
+          SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _buildHeader(isMobile),
+                  const SizedBox(height: 40),
+                  _buildBillingToggle(),
+                  const SizedBox(height: 40),
+                  _buildPlansGrid(isMobile),
+                  const SizedBox(height: 28),
+                  _buildAddOnCard(isMobile),
+                  const SizedBox(height: 40),
+                  _buildContinueBar(isMobile),
+                  const SizedBox(height: 40),
+                  _buildFooterNote(),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -342,8 +354,8 @@ class _PricingPageState extends State<PricingPage>
                 .toList(),
           );
         }
-// 2 cross 2 mobile ki grid
-         final useTwoColumns = width < 1100;
+
+        final useTwoColumns = width < 1100;
         if (useTwoColumns) {
           return Column(
             children: [
@@ -658,13 +670,13 @@ class _PlanCardState extends State<_PlanCard> {
       padding: const EdgeInsets.all(26),
       decoration: BoxDecoration(
         color: highlighted
-            ? Colors.white.withOpacity(0.06)
-            : Colors.white.withOpacity(0.03),
+            ? Colors.white.withOpacity(0.07)
+            : Colors.white.withOpacity(0.04),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: widget.isSelected
               ? Colors.greenAccent.withOpacity(0.7)
-              : Colors.white.withOpacity(_hovered ? 0.18 : 0.08),
+              : Colors.white.withOpacity(_hovered ? 0.20 : 0.10),
           width: widget.isSelected ? 1.6 : 1,
         ),
       ),
@@ -690,6 +702,8 @@ class _PlanCardState extends State<_PlanCard> {
       onExit:  (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: widget.onSelect,
+        // Highlighted (Prime) plan gets the circulating aura border to
+        // visually call it out, matching CirculatingAura from premium_effects.
         child: highlighted
             ? CirculatingAura(
           controller: widget.bgController,
@@ -904,11 +918,7 @@ class _PlanCardState extends State<_PlanCard> {
           auraController: widget.bgController,
           outlined: true,
           height: 44,
-          style: OutlinedButton.styleFrom(
-            foregroundColor: Colors.white,
-            side: BorderSide(color: Colors.white.withOpacity(_hovered ? 0.6 : 0.28)),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-          ),
+          backgroundColor: _hovered ? Colors.white.withOpacity(0.08) : null,
           child: Text(
             widget.isSelected ? 'Selected' : 'Choose ${widget.plan.name}',
             style: const TextStyle(
