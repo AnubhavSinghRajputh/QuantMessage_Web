@@ -1,87 +1,120 @@
 // screens/app_bar_menu/pricing/pricing_page.dart
 
-
-
 import 'package:flutter/material.dart';
 import '../../premium_effects.dart';
 import '../../button_buldge.dart';
 // import 'transition_animations.dart';
 import '../../animations/pendulum_animation.dart';
 
-
-
 enum BillingCycle { monthly, yearly }
 
 class PricingPlan {
-  final String         name;
-  final String         tagline;
-  final double         monthlyPrice;
-  final double         yearlyPrice;   // per month, billed yearly
-  final List<String>   features;
-  final bool           highlighted;
-  final IconData       icon;
+  final String       name;
+  final String       tagline;
+  final double       monthlyPrice;          // in INR (₹)
+  final double       yearlyDiscountPct;      // e.g. 0.20 == 20% off monthly rate
+  final List<String> features;
+  final bool         highlighted;
+  final bool         isAddOn;
+  final IconData     icon;
 
   const PricingPlan({
     required this.name,
     required this.tagline,
     required this.monthlyPrice,
-    required this.yearlyPrice,
     required this.features,
     required this.icon,
+    this.yearlyDiscountPct = 0.20,
     this.highlighted = false,
+    this.isAddOn = false,
   });
 
-  double priceFor(BillingCycle cycle) =>
-      cycle == BillingCycle.monthly ? monthlyPrice : yearlyPrice;
+  /// Effective price per month for the given billing cycle.
+  /// Yearly price is calculated automatically — no need to hardcode it.
+  double priceFor(BillingCycle cycle) {
+    if (monthlyPrice == 0) return 0;
+    if (cycle == BillingCycle.monthly) return monthlyPrice;
+    final discounted = monthlyPrice * (1 - yearlyDiscountPct);
+    return discounted;
+  }
+
+  /// Total billed amount for the cycle (yearly is charged as 12x the
+  /// discounted monthly rate, upfront).
+  double totalFor(BillingCycle cycle) {
+    final perMonth = priceFor(cycle);
+    return cycle == BillingCycle.yearly ? perMonth * 12 : perMonth;
+  }
 }
 
 const _plans = <PricingPlan>[
   PricingPlan(
-    name:         'Hobby',
-    tagline:      'For curious tinkerers',
+    name:         'Free',
+    tagline:      'Get started with QuantMessage',
     monthlyPrice: 0,
-    yearlyPrice:  0,
     icon:         Icons.bolt_outlined,
     features: [
       'Access to QuantMessage free tier',
-      '1,000 messages / month',
+      'Limited messages / month',
       'Community support',
       'Web + Mobile access',
+      'Ads supported',
     ],
   ),
   PricingPlan(
     name:         'Pro',
-    tagline:      'For builders shipping daily',
-    monthlyPrice: 19,
-    yearlyPrice:  15,
+    tagline:      'For individuals who want more',
+    monthlyPrice: 150,
     icon:         Icons.workspace_premium_outlined,
-    highlighted:  true,
     features: [
-      'Unlimited messages',
-      'Managed agents (10)',
-      'Web search & citations',
-      'Prompt caching & memory',
-      'Priority email support',
+      'Full access to QuantMessage',
+      'Higher message limits',
+      'Priority response speed',
+      'Email support',
+      'Reduced ads',
     ],
   ),
   PricingPlan(
-    name:         'Team',
-    tagline:      'For production workloads',
-    monthlyPrice: 49,
-    yearlyPrice:  39,
-    icon:         Icons.groups_2_outlined,
+    name:         'Prime',
+    tagline:      'For power users who need it all',
+    monthlyPrice: 250,
+    icon:         Icons.auto_awesome_outlined,
+    highlighted:  true,
     features: [
       'Everything in Pro',
-      'Unlimited managed agents',
-      'Batch processing (50% off)',
-      'MCP connector + code execution',
-      'Files API & Skills',
-      'Dedicated support',
+      'Unlimited QuantMessage access',
+      'Advanced features & tools',
+      'Faster priority support',
+      'No ads included',
+    ],
+  ),
+  PricingPlan(
+    name:         'Enterprise',
+    tagline:      'For teams and organizations',
+    monthlyPrice: 1000,
+    icon:         Icons.groups_2_outlined,
+    features: [
+      'Everything in Prime',
+      'Team / multi-seat access',
+      'Dedicated account manager',
+      'Custom integrations',
+      'SLA-backed support',
+      'No ads included',
     ],
   ),
 ];
 
-
+const _addOnPlan = PricingPlan(
+  name:         'No Ads',
+  tagline:      'Remove ads from any plan',
+  monthlyPrice: 50,
+  icon:         Icons.block_outlined,
+  isAddOn:      true,
+  features: [
+    'Removes all ads',
+    'Stacks with Free or Pro plan',
+    'Cancel anytime',
+  ],
+);
 
 class PricingPage extends StatefulWidget {
   const PricingPage({Key? key}) : super(key: key);
@@ -97,10 +130,12 @@ class _PricingPageState extends State<PricingPage>
   late final Animation<double>   _heroFade;
   late final Animation<Offset>   _heroSlide;
 
-  BillingCycle   _cycle     = BillingCycle.monthly;
-  PricingPlan    _selected  = _plans[1]; // default to Pro
-  final GlobalKey _bodyKey   = GlobalKey();
-  Key            _swapKey   = const ValueKey('plans_grid_v1');
+  BillingCycle _cycle    = BillingCycle.monthly;
+  PricingPlan  _selected = _plans[2]; // default to Prime (highlighted plan)
+  bool         _addOnSelected = false;
+
+  final GlobalKey _bodyKey = GlobalKey();
+  Key _swapKey = const ValueKey('plans_grid_v1');
 
   // animation controller
   late final AnimationController _bgController;
@@ -124,7 +159,6 @@ class _PricingPageState extends State<PricingPage>
       parent: _heroCtrl,
       curve: Curves.easeOutCubic,
     ));
-
 
     _bgController = AnimationController(
       vsync: this,
@@ -151,12 +185,25 @@ class _PricingPageState extends State<PricingPage>
     });
   }
 
+  void _toggleAddOn() {
+    setState(() => _addOnSelected = !_addOnSelected);
+  }
+
+  double get _totalDue {
+    final base = _selected.totalFor(_cycle);
+    final addOn = _addOnSelected ? _addOnPlan.totalFor(_cycle) : 0.0;
+    return base + addOn;
+  }
+
   void _onContinue() {
+    final cycleLabel = _cycle == BillingCycle.monthly ? 'monthly' : 'yearly';
+    final addOnLabel = _addOnSelected ? ' + No Ads' : '';
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Continuing with ${_selected.name} plan (${_cycle == BillingCycle.monthly ? "monthly" : "yearly"}).',
+          'Continuing with ${_selected.name}$addOnLabel plan ($cycleLabel) '
+              '— ₹${_totalDue.toStringAsFixed(0)} ${_cycle == BillingCycle.yearly ? "/ year" : "/ month"}.',
           style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF1A1A1F),
@@ -165,8 +212,6 @@ class _PricingPageState extends State<PricingPage>
       ),
     );
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -187,6 +232,8 @@ class _PricingPageState extends State<PricingPage>
               _buildBillingToggle(),
               const SizedBox(height: 40),
               _buildPlansGrid(isMobile),
+              const SizedBox(height: 28),
+              _buildAddOnCard(isMobile),
               const SizedBox(height: 40),
               _buildContinueBar(isMobile),
               const SizedBox(height: 40),
@@ -225,7 +272,7 @@ class _PricingPageState extends State<PricingPage>
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 640),
               child: Text(
-                'Simple, transparent pricing. Start free, upgrade when you ship.',
+                'Simple, transparent pricing for QuantMessage. Start free, upgrade anytime.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily:  'Inter',
@@ -242,8 +289,6 @@ class _PricingPageState extends State<PricingPage>
       ),
     );
   }
-
-
 
   Widget _buildBillingToggle() {
     return Container(
@@ -301,8 +346,6 @@ class _PricingPageState extends State<PricingPage>
     );
   }
 
-
-
   Widget _buildPlansGrid(bool isMobile) {
     final grid = LayoutBuilder(
       builder: (context, constraints) {
@@ -344,7 +387,6 @@ class _PricingPageState extends State<PricingPage>
       },
     );
 
-
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 450),
       switchInCurve:  Curves.easeOutCubic,
@@ -362,9 +404,115 @@ class _PricingPageState extends State<PricingPage>
     );
   }
 
+  Widget _buildAddOnCard(bool isMobile) {
+    final price = _addOnPlan.priceFor(_cycle);
 
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 680),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: _toggleAddOn,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOut,
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: _addOnSelected
+                    ? const Color(0xFFFF8A50)
+                    : const Color(0xFF1A1A1A).withOpacity(0.08),
+                width: _addOnSelected ? 1.6 : 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0D0D0D).withOpacity(0.05),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.block_outlined, size: 17, color: Color(0xFF0D0D0D)),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'No Ads add-on',
+                        style: TextStyle(
+                          fontFamily:  'Inter',
+                          fontSize:    14.5,
+                          fontWeight:  FontWeight.w700,
+                          color:       Color(0xFF0D0D0D),
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Remove ads from your plan',
+                        style: TextStyle(
+                          fontFamily:  'Inter',
+                          fontSize:    12.5,
+                          fontWeight:  FontWeight.w400,
+                          color:       const Color(0xFF0D0D0D).withOpacity(0.55),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  price == 0 ? 'Free' : '₹${price.toStringAsFixed(0)} / mo',
+                  style: const TextStyle(
+                    fontFamily:  'Inter',
+                    fontSize:    14,
+                    fontWeight:  FontWeight.w700,
+                    color:       Color(0xFF0D0D0D),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _addOnSelected ? const Color(0xFFFF8A50) : Colors.transparent,
+                    border: Border.all(
+                      color: _addOnSelected
+                          ? const Color(0xFFFF8A50)
+                          : const Color(0xFF0D0D0D).withOpacity(0.25),
+                      width: 1.4,
+                    ),
+                  ),
+                  child: _addOnSelected
+                      ? const Icon(Icons.check, size: 14, color: Colors.white)
+                      : null,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildContinueBar(bool isMobile) {
+    final cycleSuffix = _cycle == BillingCycle.monthly ? '/ mo' : '/ yr';
+
     return Wrap(
       spacing: 16,
       runSpacing: 12,
@@ -412,7 +560,9 @@ class _PricingPageState extends State<PricingPage>
               const Icon(Icons.check_circle, size: 16, color: Color(0xFF0D0D0D)),
               const SizedBox(width: 8),
               Text(
-                'Selected: ${_selected.name}',
+                'Selected: ${_selected.name}'
+                    '${_addOnSelected ? ' + No Ads' : ''}'
+                    '  •  ₹${_totalDue.toStringAsFixed(0)} $cycleSuffix',
                 style: const TextStyle(
                   fontFamily:  'Inter',
                   fontSize:    13,
@@ -432,8 +582,8 @@ class _PricingPageState extends State<PricingPage>
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 560),
       child: Text(
-        'All plans include a 14-day free trial. No credit card required. '
-            'Cancel any time from your account settings.',
+        'Prices shown in INR (₹). Yearly billing is charged upfront at a 20% '
+            'discount versus the monthly rate. Cancel any time from your account settings.',
         textAlign: TextAlign.center,
         style: TextStyle(
           fontFamily:  'Inter',
@@ -446,8 +596,6 @@ class _PricingPageState extends State<PricingPage>
     );
   }
 }
-
-
 
 class _PlanCard extends StatefulWidget {
   final PricingPlan         plan;
@@ -596,16 +744,16 @@ class _PlanCardState extends State<_PlanCard> {
   }
 
   Widget _buildPrice(bool highlighted) {
-    final price   = widget.plan.priceFor(widget.cycle);
-    final fg      = highlighted ? Colors.white : const Color(0xFF0D0D0D);
-    final sub     = (highlighted ? Colors.white : const Color(0xFF0D0D0D)).withOpacity(0.55);
-    final isFree  = price == 0;
+    final price  = widget.plan.priceFor(widget.cycle);
+    final fg     = highlighted ? Colors.white : const Color(0xFF0D0D0D);
+    final sub    = (highlighted ? Colors.white : const Color(0xFF0D0D0D)).withOpacity(0.55);
+    final isFree = price == 0;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          isFree ? 'Free' : '\$${price.toStringAsFixed(0)}',
+          isFree ? 'Free' : '₹${price.toStringAsFixed(0)}',
           style: TextStyle(
             fontFamily:    '__copernicus_669e4a',
             fontSize:      38,
@@ -656,7 +804,6 @@ class _PlanCardState extends State<_PlanCard> {
 
   Widget _buildFeatures(bool highlighted) {
     final fg = highlighted ? Colors.white : const Color(0xFF0D0D0D);
-    final muted = (highlighted ? Colors.white : const Color(0xFF0D0D0D)).withOpacity(0.65);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -694,7 +841,6 @@ class _PlanCardState extends State<_PlanCard> {
 
   Widget _buildCTA(bool highlighted) {
     if (highlighted) {
-
       return Center(
         child: ButtonBulge(
           child: AuraButton(
@@ -707,7 +853,7 @@ class _PlanCardState extends State<_PlanCard> {
               children: [
                 Flexible(
                   child: Text(
-                    widget.isSelected ? 'Selected' : 'Choose Pro',
+                    widget.isSelected ? 'Selected' : 'Choose ${widget.plan.name}',
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,

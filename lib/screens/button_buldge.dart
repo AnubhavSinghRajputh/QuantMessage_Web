@@ -9,8 +9,8 @@ class ButtonBulge extends StatefulWidget {
   const ButtonBulge({
     super.key,
     required this.child,
-    this.hoverScale = 1.05, // Slightly bigger on hover
-    this.pressedScale = 0.95, // Slightly smaller when clicked
+    this.hoverScale = 1.05, // taki animation slightly hover kar sake
+    this.pressedScale = 0.95, // button slightly smaller ho sake jab click kiya jaye
     this.duration = const Duration(milliseconds: 200),
   });
 
@@ -33,20 +33,17 @@ class _ButtonBulgeState extends State<ButtonBulge> {
     }
 
     return MouseRegion(
-      // Detects when the cursor enters the button area
       onEnter: (_) => setState(() => _isHovered = true),
-      // Detects when the cursor leaves the button area
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
-        // Detects the exact moment the user touches the screen/clicks
+
         onTapDown: (_) => setState(() => _isPressed = true),
-        // Detects when the user releases the touch/click
+
         onTapUp: (_) => setState(() => _isPressed = false),
         onTapCancel: () => setState(() => _isPressed = false),
         child: AnimatedScale(
           scale: currentScale,
           duration: widget.duration,
-          // Curves.easeOutBack creates a subtle "bounce" effect
           curve: Curves.easeOutBack,
           child: widget.child,
         ),
