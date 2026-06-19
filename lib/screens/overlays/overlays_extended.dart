@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '../animations/animation_widget/desktop_animation.dart';
 import '../animations/animation_widget/terminal_animation.dart';
+import '../animations/animation_widget/ios_animation.dart';
 import '../transition_animations.dart';
 import '../buttons/moving_icons_button.dart';
 
@@ -193,6 +194,16 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
         'terminal';
   }
 
+  bool get _isIOSSegmentSelected {
+    if (_segmentIndex < 0 || _segmentIndex >= widget.segmentLabels.length) {
+      return false;
+    }
+    return widget.segmentLabels[_segmentIndex]
+        .trim()
+        .toLowerCase()
+        .contains('ios');
+  }
+
   void _attachScrollListener() {
     if (!mounted || _isListening) return;
 
@@ -368,6 +379,10 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
   Widget _resolveBody() {
     if (widget.showSegmentedControl && _isTerminalSegmentSelected) {
       return _buildTerminalSection();
+    }
+
+    if (widget.showSegmentedControl && _isIOSSegmentSelected) {
+      return _buildIOSSection();
     }
 
     if (widget.showDesktop) {
@@ -605,6 +620,60 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
             }
 
             return TerminalAnimation(
+              width: width,
+              height: height,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildIOSSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFAFAFA),
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.black.withOpacity(0.06),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Center(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // IOSAnimation renders a portrait phone mockup, unlike the
+            // landscape Desktop/Terminal windows, so it's sized from
+            // height first (reusing the same min/max bounds those
+            // sections use, so the card doesn't resize when switching
+            // tabs) and only then capped by the available width.
+            const double portraitRatio = 0.7; // width / height
+
+            double height = widget.maxDesktopHeight;
+            double width = height * portraitRatio;
+
+            final bool isMobile = constraints.maxWidth < 600;
+            final double maxAllowedWidth =
+                constraints.maxWidth * (isMobile ? 0.85 : 0.5);
+
+            if (width > maxAllowedWidth) {
+              width = maxAllowedWidth;
+              height = width / portraitRatio;
+            }
+
+            height = height.clamp(widget.minDesktopHeight, widget.maxDesktopHeight);
+            width = height * portraitRatio;
+
+            if (widget.compactScale != 1.0) {
+              width  *= widget.compactScale;
+              height *= widget.compactScale;
+            }
+
+            return IOSAnimation(
               width: width,
               height: height,
             );

@@ -1,8 +1,16 @@
+// lib/screens/animations/animation_widget/ios_animation.dart
+
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-
+/// A single scripted beat in the iOS Messages-style conversation.
+///
+/// Mirrors the shape of `TerminalLine` from terminal_animation.dart so the
+/// two widgets can be authored side by side: each entry waits [delayBefore],
+/// then plays out (typing into the input bar, showing "•••" typing dots,
+/// revealing a bubble, etc.), then waits [holdAfter] before the next line
+/// starts.
 class IOSMessageLine {
   const IOSMessageLine({
     required this.type,
@@ -17,27 +25,45 @@ class IOSMessageLine {
   final IOSLineType type;
   final String text;
 
+  /// Pause before this line begins playing.
   final Duration delayBefore;
 
+  /// Whether the text is revealed character-by-character. For [IOSLineType.sent]
+  /// this animates the text being composed in the input bar before "sending".
+  /// For [IOSLineType.received] this animates the text appearing inside the
+  /// bubble after the typing-dots indicator. Set false for an instant reveal.
   final bool animateTyping;
 
   final Duration typingSpeed;
 
+  /// Pause after this line finishes before the next one starts.
   final Duration holdAfter;
 
+  /// Only used by [IOSLineType.received]: how long the "•••" typing-dots
+  /// bubble is shown before it's replaced by the real message.
   final Duration typingIndicatorDuration;
 }
 
 enum IOSLineType {
+  /// Outgoing bubble (right-aligned, accent color). Plays by typing the text
+  /// into the bottom input bar, then "sending" it as a bubble.
   sent,
 
+  /// Incoming bubble (left-aligned, grey). Plays by showing an animated
+  /// "•••" typing indicator, then revealing the message bubble.
   received,
 
+  /// Centered grey meta text, e.g. "Today 9:41 AM". Appears instantly.
   timestamp,
 
+  /// Small grey text under the most recent outgoing bubble, e.g. "Delivered"
+  /// or "Read". Appears instantly.
   readReceipt,
 }
 
+/// Internal render kind for entries currently in the chat log (separate from
+/// [IOSLineType] because the typing-dots indicator is a transient entry that
+/// isn't itself part of the authored script).
 enum _BubbleKind { sent, received, typingDots, timestamp, readReceipt }
 
 class _ChatEntry {
@@ -46,6 +72,21 @@ class _ChatEntry {
   String text;
 }
 
+/// A reusable, self-contained iPhone-style mockup that plays out a scripted
+/// iMessage-style conversation: typing indicators, composed-then-sent
+/// bubbles, timestamps and read receipts, looping by default.
+///
+/// Drop it into any screen like:
+///
+/// ```dart
+/// const IOSAnimation(
+///   contactName: 'TaskFlow Assistant',
+///   contactSubtitle: 'AI · Always available',
+/// )
+/// ```
+///
+/// Pass a custom [script] (a `List<IOSMessageLine>`) to author your own
+/// conversation; otherwise a sensible default plays.
 class IOSAnimation extends StatefulWidget {
   const IOSAnimation({
     super.key,
@@ -79,8 +120,10 @@ class IOSAnimation extends StatefulWidget {
   final String contactInitials;
   final String statusBarTime;
 
+  /// Backdrop behind the phone mockup.
   final Color cardColor;
 
+  /// Bezel color of the phone mockup.
   final Color frameColor;
 
   final Color chatBackgroundColor;
@@ -89,6 +132,7 @@ class IOSAnimation extends StatefulWidget {
   final Color sentTextColor;
   final Color receivedTextColor;
 
+  /// Used for the back chevron, send button and contact avatar.
   final Color accentColor;
 
   final List<IOSMessageLine>? script;
@@ -152,6 +196,7 @@ class _IOSAnimationState extends State<IOSAnimation>
     _playFrom(0);
   }
 
+  // ---- Sequencing ----------------------------------------------------
 
   void _playFrom(int index) {
     if (_disposed) return;
@@ -298,6 +343,7 @@ class _IOSAnimationState extends State<IOSAnimation>
     super.dispose();
   }
 
+  // ---- Build -----------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -667,6 +713,8 @@ class _IOSAnimationState extends State<IOSAnimation>
   }
 }
 
+/// A single chat bubble with an iMessage-style "tail" on the side it points
+/// from.
 class _Bubble extends StatelessWidget {
   const _Bubble({
     required this.alignment,
@@ -712,6 +760,8 @@ class _Bubble extends StatelessWidget {
   }
 }
 
+/// Faint diagonal texture for the backdrop card, matching the visual
+/// language of terminal_animation.dart's topo-line background.
 class _IOSBackdropPainter extends CustomPainter {
   _IOSBackdropPainter({required this.color});
 
@@ -754,6 +804,9 @@ class _IOSBackdropPainter extends CustomPainter {
       oldDelegate.color != color;
 }
 
+/// A ready-to-use default conversation, shown when [IOSAnimation.script] is
+/// not provided. Swap in your own `List<IOSMessageLine>` to script a
+/// different conversation while reusing the same widget.
 const List<IOSMessageLine> defaultIOSScript = [
   IOSMessageLine(
     type: IOSLineType.timestamp,
