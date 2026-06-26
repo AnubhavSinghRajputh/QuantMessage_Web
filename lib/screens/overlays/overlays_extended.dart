@@ -7,10 +7,6 @@ import '../animations/animation_widget/terminal_animation.dart';
 import '../animations/animation_widget/ios_animation.dart';
 import '../transition_animations.dart';
 import '../buttons/moving_icons_button.dart';
-//  here he have added your imports
-
-// how is it ??
-
 
 enum OverlayTransitionType {
   slideRight,
@@ -46,14 +42,11 @@ class OverlaysExtended extends StatefulWidget {
 
   final OverlayTransitionType transitionType;
   final bool animateContentSwap;
-  final Key? contentKey; // change to trigger internal AnimatedSwitcher
+  final Key? contentKey;
 
   final bool showSegmentedControl;
-
   final List<String> segmentLabels;
-
   final int segmentInitialIndex;
-
   final void Function(int index, String label)? onSegmentChanged;
 
   const OverlaysExtended({
@@ -79,7 +72,9 @@ class OverlaysExtended extends StatefulWidget {
     this.desktopWidthFactor  = 0.85,
     this.desktopAspectRatio  = 1.6,
     this.minDesktopHeight    = 240,
-    this.maxDesktopHeight    = 380,
+    // ↑ maxDesktopHeight raised slightly so the MacBook lid + base
+    //   (540 + 44 = 584 native, scaled down) has comfortable room.
+    this.maxDesktopHeight    = 420,
     this.compactScale        = 1.0,
     // Transition defaults
     this.transitionType      = OverlayTransitionType.slideUp,
@@ -127,11 +122,11 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
   late AnimationController _controller;
   late Animation<double>   _fadeAnimation;
   late Animation<Offset>   _slideAnimation;
-  final GlobalKey _widgetKey       = GlobalKey();
-  ScrollPosition?    _scrollPosition;
-  bool _hasAnimated      = false;
-  bool _isListening      = false;
-  bool _useExternalCtrl  = false;
+  final GlobalKey _widgetKey      = GlobalKey();
+  ScrollPosition?   _scrollPosition;
+  bool _hasAnimated     = false;
+  bool _isListening     = false;
+  bool _useExternalCtrl = false;
   late int _segmentIndex;
 
   @override
@@ -197,10 +192,11 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
         'terminal';
   }
 
-  bool get _isIOSSegmentSelected {
+  bool get _isMacbookSegmentSelected {
     if (_segmentIndex < 0 || _segmentIndex >= widget.segmentLabels.length) {
       return false;
     }
+    // Matches the default label "Web & iOS" and any label containing "ios"
     return widget.segmentLabels[_segmentIndex]
         .trim()
         .toLowerCase()
@@ -228,9 +224,7 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
 
   void _checkInitialVisibility() {
     if (!mounted) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkVisibility();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkVisibility());
   }
 
   void _checkVisibility() {
@@ -245,15 +239,12 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     }
 
     try {
-      final viewport = RenderAbstractViewport.of(renderObject);
-      final reveal   = viewport.getOffsetToReveal(renderObject, 0.0).offset;
-      final pixels   = _scrollPosition!.pixels;
-      final viewportHeight = _scrollPosition!.viewportDimension;
-      final triggerPoint    = pixels + viewportHeight * widget.visibilityThreshold;
-
-      if (reveal < triggerPoint) {
-        _triggerAnimation();
-      }
+      final viewport    = RenderAbstractViewport.of(renderObject);
+      final reveal      = viewport.getOffsetToReveal(renderObject, 0.0).offset;
+      final pixels      = _scrollPosition!.pixels;
+      final viewH       = _scrollPosition!.viewportDimension;
+      final triggerPt   = pixels + viewH * widget.visibilityThreshold;
+      if (reveal < triggerPt) _triggerAnimation();
     } catch (_) {
       _triggerAnimation();
     }
@@ -272,16 +263,13 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     }
 
     _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        widget.onAnimated?.call();
-      }
+      if (status == AnimationStatus.completed) widget.onAnimated?.call();
     });
   }
 
   @override
   void didUpdateWidget(covariant OverlaysExtended oldWidget) {
     super.didUpdateWidget(oldWidget);
-
     if (oldWidget.animationCurve != widget.animationCurve ||
         oldWidget.slideOffset != widget.slideOffset) {
       _fadeAnimation = CurvedAnimation(
@@ -306,12 +294,11 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     if (_useExternalCtrl && widget.controller != null) {
       widget.controller!.removeStatusListener(_handleExternalStatus);
     }
-    if (!_useExternalCtrl) {
-      _controller.dispose();
-    }
+    if (!_useExternalCtrl) _controller.dispose();
     super.dispose();
   }
 
+  // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -322,9 +309,7 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
         child: Container(
           key: _widgetKey,
           width: double.infinity,
-          constraints: BoxConstraints(
-            maxWidth: widget.maxWidth ?? 1200,
-          ),
+          constraints: BoxConstraints(maxWidth: widget.maxWidth ?? 1200),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
@@ -351,7 +336,6 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
                     widget.description != null ||
                     widget.showSegmentedControl)
                   _buildHeader(),
-
                 _buildAnimatedBody(),
               ],
             ),
@@ -363,7 +347,6 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
 
   Widget _buildAnimatedBody() {
     final body = _resolveBody();
-
     if (!widget.animateContentSwap) return body;
 
     return AnimatedSwitcher(
@@ -373,7 +356,8 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
       layoutBuilder: _buildSwitcherLayout,
       transitionBuilder: _buildSwitcherTransition,
       child: KeyedSubtree(
-        key: widget.contentKey ?? ValueKey('overlay_body_segment_$_segmentIndex'),
+        key: widget.contentKey ??
+            ValueKey('overlay_body_segment_$_segmentIndex'),
         child: body,
       ),
     );
@@ -383,22 +367,13 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     if (widget.showSegmentedControl && _isTerminalSegmentSelected) {
       return _buildTerminalSection();
     }
-
-    if (widget.showSegmentedControl && _isIOSSegmentSelected) {
-      return _buildIOSSection();
+    if (widget.showSegmentedControl && _isMacbookSegmentSelected) {
+      return _buildMacbookSection();
     }
-
-    if (widget.showDesktop) {
-      return _buildDesktopSection();
-    }
-
+    if (widget.showDesktop) return _buildDesktopSection();
     if (widget.customContent != null) {
-      return Padding(
-        padding: widget.padding,
-        child: widget.customContent!,
-      );
+      return Padding(padding: widget.padding, child: widget.customContent!);
     }
-
     return const SizedBox.shrink();
   }
 
@@ -421,10 +396,8 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
       ) {
     switch (widget.transitionType) {
       case OverlayTransitionType.slideRight:
-        final curve = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutQuint,
-        );
+        final curve =
+        CurvedAnimation(parent: animation, curve: Curves.easeOutQuint);
         return SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(1.0, 0.0),
@@ -432,12 +405,9 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
           ).animate(curve),
           child: FadeTransition(opacity: animation, child: child),
         );
-
       case OverlayTransitionType.zoomFade:
-        final curve = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutBack,
-        );
+        final curve =
+        CurvedAnimation(parent: animation, curve: Curves.easeOutBack);
         return FadeTransition(
           opacity: animation,
           child: ScaleTransition(
@@ -445,12 +415,9 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
             child: child,
           ),
         );
-
       case OverlayTransitionType.slideUp:
-        final curve = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutCubic,
-        );
+        final curve =
+        CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
         return SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(0.0, 1.0),
@@ -458,12 +425,12 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
           ).animate(curve),
           child: FadeTransition(opacity: animation, child: child),
         );
-
       case OverlayTransitionType.softFade:
         return FadeTransition(opacity: animation, child: child);
     }
   }
 
+  // ── Header ─────────────────────────────────────────────────────────────────
 
   Widget _buildHeader() {
     return Container(
@@ -472,10 +439,7 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(
-          bottom: BorderSide(
-            color: Colors.black.withOpacity(0.06),
-            width: 1,
-          ),
+          bottom: BorderSide(color: Colors.black.withOpacity(0.06), width: 1),
         ),
       ),
       child: Column(
@@ -546,142 +510,120 @@ class _OverlaysExtendedState extends State<OverlaysExtended>
     );
   }
 
+  // ── Section builders ───────────────────────────────────────────────────────
+
+  /// Shared container decoration used by all three section wrappers.
+  BoxDecoration get _sectionDecoration => BoxDecoration(
+    color: const Color(0xFFFAFAFA),
+    border: Border(
+      bottom: BorderSide(
+        color: Colors.black.withOpacity(0.06),
+        width: 1,
+      ),
+    ),
+  );
 
   Widget _buildDesktopSection() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.black.withOpacity(0.06),
-            width: 1,
-          ),
-        ),
-      ),
+      decoration: _sectionDecoration,
       child: Center(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            double width = constraints.maxWidth * widget.desktopWidthFactor;
-            double height = width / widget.desktopAspectRatio;
+        child: LayoutBuilder(builder: (context, constraints) {
+          double width  = constraints.maxWidth * widget.desktopWidthFactor;
+          double height = width / widget.desktopAspectRatio;
+          height = height.clamp(widget.minDesktopHeight, widget.maxDesktopHeight);
 
-            height = height.clamp(widget.minDesktopHeight, widget.maxDesktopHeight);
+          if (constraints.maxWidth < 600) {
+            width  = constraints.maxWidth * 0.95;
+            height = (width / 1.4).clamp(220.0, 340.0);
+          }
 
-            if (constraints.maxWidth < 600) {
-              width = constraints.maxWidth * 0.95;
-              height = width / 1.4; // slightly taller on mobile
-              height = height.clamp(220.0, 340.0);
-            }
+          if (widget.compactScale != 1.0) {
+            width  *= widget.compactScale;
+            height *= widget.compactScale;
+          }
 
-            if (widget.compactScale != 1.0) {
-              width  *= widget.compactScale;
-              height *= widget.compactScale;
-            }
-
-            return DesktopAnimation(
-              width: width,
-              height: height,
-            );
-          },
-        ),
+          return DesktopAnimation(width: width, height: height);
+        }),
       ),
     );
   }
-
 
   Widget _buildTerminalSection() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.black.withOpacity(0.06),
-            width: 1,
-          ),
-        ),
-      ),
+      decoration: _sectionDecoration,
       child: Center(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            double width = constraints.maxWidth * widget.desktopWidthFactor;
-            double height = width / widget.desktopAspectRatio;
+        child: LayoutBuilder(builder: (context, constraints) {
+          double width  = constraints.maxWidth * widget.desktopWidthFactor;
+          double height = width / widget.desktopAspectRatio;
+          height = height.clamp(widget.minDesktopHeight, widget.maxDesktopHeight);
 
-            height = height.clamp(widget.minDesktopHeight, widget.maxDesktopHeight);
+          if (constraints.maxWidth < 600) {
+            width  = constraints.maxWidth * 0.95;
+            height = (width / 1.4).clamp(220.0, 340.0);
+          }
 
-            if (constraints.maxWidth < 600) {
-              width = constraints.maxWidth * 0.95;
-              height = width / 1.4;
-              height = height.clamp(220.0, 340.0);
-            }
+          if (widget.compactScale != 1.0) {
+            width  *= widget.compactScale;
+            height *= widget.compactScale;
+          }
 
-            if (widget.compactScale != 1.0) {
-              width  *= widget.compactScale;
-              height *= widget.compactScale;
-            }
-
-            return TerminalAnimation(
-              width: width,
-              height: height,
-            );
-          },
-        ),
+          return TerminalAnimation(width: width, height: height);
+        }),
       ),
     );
   }
 
-
-  Widget _buildIOSSection() {
+  /// MacBook section — IOSAnimation now renders a landscape MacBook shell,
+  /// so we size it exactly like the Desktop / Terminal sections (landscape
+  /// aspect ratio, same min/max bounds) rather than the old portrait-phone
+  /// sizing.  The widget's own LayoutBuilder + scale logic handles the rest.
+  Widget _buildMacbookSection() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.black.withOpacity(0.06),
-            width: 1,
-          ),
-        ),
-      ),
+      // Extra vertical padding gives the floating MacBook animation breathing
+      // room so the drop-shadow isn't clipped at the bottom.
+      padding: const EdgeInsets.fromLTRB(20, 28, 20, 32),
+      decoration: _sectionDecoration,
       child: Center(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            // IOSAnimation renders a portrait phone mockup, unlike the
-            // landscape Desktop/Terminal windows, so it's sized from
-            // height first (reusing the same min/max bounds those
-            // sections use, so the card doesn't resize when switching
-            // tabs) and only then capped by the available width.
-            const double portraitRatio = 0.7; // width / height
+        child: LayoutBuilder(builder: (context, constraints) {
+          // IOSAnimation's internal LayoutBuilder scales everything from its
+          // available width, so we just need to hand it a well-constrained
+          // SizedBox.  We use the same width/height logic as the other
+          // sections so the card height stays stable when switching tabs.
+          double width  = constraints.maxWidth * widget.desktopWidthFactor;
+          double height = width / widget.desktopAspectRatio;
+          height = height.clamp(widget.minDesktopHeight, widget.maxDesktopHeight);
 
-            double height = widget.maxDesktopHeight;
-            double width = height * portraitRatio;
+          if (constraints.maxWidth < 600) {
+            width  = constraints.maxWidth * 0.95;
+            // MacBook is wider than it is tall; a 1.6 ratio works fine but
+            // give it a touch more height on mobile so keys are visible.
+            height = (width / 1.45).clamp(220.0, 360.0);
+          }
 
-            final bool isMobile = constraints.maxWidth < 600;
-            final double maxAllowedWidth =
-                constraints.maxWidth * (isMobile ? 0.85 : 0.5);
+          if (widget.compactScale != 1.0) {
+            width  *= widget.compactScale;
+            height *= widget.compactScale;
+          }
 
-            if (width > maxAllowedWidth) {
-              width = maxAllowedWidth;
-              height = width / portraitRatio;
-            }
-
-            height = height.clamp(widget.minDesktopHeight, widget.maxDesktopHeight);
-            width = height * portraitRatio;
-
-            if (widget.compactScale != 1.0) {
-              width  *= widget.compactScale;
-              height *= widget.compactScale;
-            }
-
-            return IOSAnimation(
-              width: width,
-              height: height,
-            );
-          },
-        ),
+          // The MacBook shell (lid 540 + base 44 = 584 px native) floats
+          // inside whatever SizedBox we give it; LayoutBuilder inside
+          // IOSAnimation scales it down to fit.
+          return SizedBox(
+            width: width,
+            height: height,
+            child: IOSAnimation(
+              // Pass through all theme / script tokens that callers may have
+              // customised on OverlaysExtended (via default values here).
+              loop: true,
+              autoStart: true,
+            ),
+          );
+        }),
       ),
     );
   }
