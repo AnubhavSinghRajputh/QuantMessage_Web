@@ -21,6 +21,10 @@ import 'overlays/overlays_pannel.dart';
 import 'overlays/features_overlay.dart';
 import 'overlays/overlays_extended.dart';
 
+// LOGO AND BUTTON IMPORTS
+import 'buttons/windcrest_logo.dart';
+import 'buttons/quantmessage_button.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -29,7 +33,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  // Kept this helper method in case you need to use it elsewhere in the state
+  // State variables for the two big buttons hover effects
+  bool _quantHovered = false;
+  bool _windcrestHovered = false;
+
+  // Neon Green Color for the "Shining Border"
+  final Color neonGreen = const Color(0xFF4ADE80);
+
   Future<void> _launchURL(String urlString) async {
     final Uri url = Uri.parse(urlString);
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
@@ -40,26 +50,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _bgController;
   late AnimationController _textController;
   late Animation<double>   _fadeInAnimation;
-
   late AnimationController _earlyAccessController;
   late Animation<double>   _earlyAccessFadeInAnimation;
-
   late AnimationController _betaTextController;
   late Animation<double>   _betaFadeAnimation;
   late Animation<double>   _betaShimmerAnimation;
-
   late AnimationController _descriptionController;
-
   late AnimationController _featuresController;
   late Animation<double>   _featuresFadeAnimation;
-
   late AnimationController _featuresWebController;
   late Animation<double>   _featuresWebFadeAnimation;
-
   late AnimationController _overlaysPanelController;
   late Animation<double>   _overlaysPanelFade;
   late Animation<Offset>   _overlaysPanelSlide;
-
 
   final ScrollController      _scrollController     = ScrollController();
   final TextEditingController _accessCodeController = TextEditingController();
@@ -70,86 +73,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool _featuresWebAnimated        = false;
   bool _featuresAnimated           = false;
   bool _overlaysPanelAnimated      = false;
-
   bool _isPricingHovered = false;
 
   @override
   void initState() {
     super.initState();
-
-    _bgController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 15),
-    )..repeat();
-
-    _textController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2200),
-    );
-    _fadeInAnimation = CurvedAnimation(
-      parent: _textController,
-      curve: const Interval(0.4, 0.75, curve: Curves.easeOut),
-    );
-
-    _earlyAccessController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    );
-    _earlyAccessFadeInAnimation = CurvedAnimation(
-      parent: _earlyAccessController,
-      curve: const Interval(0.4, 0.75, curve: Curves.easeOut),
-    );
-
-    _betaTextController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2800),
-    );
+    _bgController = AnimationController(vsync: this, duration: const Duration(seconds: 15))..repeat();
+    _textController = AnimationController(vsync: this, duration: const Duration(milliseconds: 2200));
+    _fadeInAnimation = CurvedAnimation(parent: _textController, curve: const Interval(0.4, 0.75, curve: Curves.easeOut));
+    _earlyAccessController = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000));
+    _earlyAccessFadeInAnimation = CurvedAnimation(parent: _earlyAccessController, curve: const Interval(0.4, 0.75, curve: Curves.easeOut));
+    _betaTextController = AnimationController(vsync: this, duration: const Duration(milliseconds: 2800));
     _betaFadeAnimation    = CurvedAnimation(parent: _betaTextController, curve: const Interval(0.0, 0.45, curve: Curves.easeOut));
     _betaShimmerAnimation = CurvedAnimation(parent: _betaTextController, curve: Curves.easeInOut);
     _betaTextController.repeat(reverse: true);
-
-    _descriptionController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-
-    _featuresWebController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    );
-    _featuresWebFadeAnimation = CurvedAnimation(
-      parent: _featuresWebController,
-      curve: Curves.easeOut,
-    );
-
-    _featuresController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    );
-    _featuresFadeAnimation = CurvedAnimation(
-      parent: _featuresController,
-      curve: Curves.easeOut,
-    );
-
-    _overlaysPanelController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    );
-    _overlaysPanelFade = CurvedAnimation(
-      parent: _overlaysPanelController,
-      curve: Curves.easeOut,
-    );
-    _overlaysPanelSlide = Tween<Offset>(
-      begin: const Offset(0, 0.04),
-      end:   Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _overlaysPanelController,
-      curve: Curves.easeOutCubic,
-    ));
-
-
+    _descriptionController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
+    _featuresWebController = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+    _featuresWebFadeAnimation = CurvedAnimation(parent: _featuresWebController, curve: Curves.easeOut);
+    _featuresController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
+    _featuresFadeAnimation = CurvedAnimation(parent: _featuresController, curve: Curves.easeOut);
+    _overlaysPanelController = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+    _overlaysPanelFade = CurvedAnimation(parent: _overlaysPanelController, curve: Curves.easeOut);
+    _overlaysPanelSlide = Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero).animate(CurvedAnimation(parent: _overlaysPanelController, curve: Curves.easeOutCubic));
     _scrollController.addListener(_onScroll);
-
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
         _textController.forward();
@@ -161,12 +107,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     final offset = _scrollController.offset;
-
     if (offset > 400 && !_computingAnimated) {
-      setState(() {
-        _computingAnimated   = true;
-        _descriptionAnimated = true;
-      });
+      setState(() { _computingAnimated = true; _descriptionAnimated = true; });
       _descriptionController.forward();
     }
     if (offset > 800 && !_earlyAccessAnimated) {
@@ -214,34 +156,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-
-
   void _goToLoginPage()       => Navigator.of(context).push(PremiumTransitions.slideRight(const LoginPage()));
   void _goToSignupPage()      => Navigator.of(context).push(PremiumTransitions.slideRight(const SignupPage()));
   void _goToGoogleLoginPage() => Navigator.of(context).push(PremiumTransitions.slideRight(const GoogleLoginPage()));
   void _goToGitHubPage()      => Navigator.of(context).push(PremiumTransitions.slideRight(const GitHubRegisPage()));
   void _goToFAQPage()         => Navigator.of(context).push(PremiumTransitions.slideRight(const FrequentlyAskedScreen()));
   void _goToPricingPage()     => Navigator.of(context).push(PremiumTransitions.slideRight(const PricingPage()));
-
-
-
-  void _showOverlayPanel() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.60),
-      builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.88,
-        minChildSize: 0.50,
-        maxChildSize: 1.0,
-        expand: false,
-        builder: (_, __) => const OverlaysPanel(),
-      ),
-    );
-  }
-
-
 
   void _handleAccessCode() {
     if (_accessCodeController.text.trim().isEmpty) {
@@ -261,8 +181,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -292,8 +210,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-
-
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: SizedBox(
@@ -313,12 +229,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 ),
                                 child: const Text(
                                   'SYSTEM ONLINE',
-                                  style: TextStyle(
-                                    color: Colors.green,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 2.0,
-                                  ),
+                                  style: TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 2.0),
                                 ),
                               ),
                             ),
@@ -344,71 +255,141 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 child: Text(
                                   'We are crafting something extraordinary. Join the next-gen agent platform built by Anubhav Singh Rajput.',
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.4),
-                                    fontSize: subHeadlineSize,
-                                    fontWeight: FontWeight.w300,
-                                    height: 1.5,
-                                  ),
+                                  style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: subHeadlineSize, fontWeight: FontWeight.w300, height: 1.5),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 48),
                             FadeTransition(
                               opacity: _fadeInAnimation,
-                              child: Wrap(
-                                spacing: 16,
-                                runSpacing: 16,
-                                alignment: WrapAlignment.center,
+                              child: Column(
                                 children: [
-                                  // REMOVED: Launch App Button as requested
-                                  ButtonBulge(
-                                    child: AuraButton(
-                                      onPressed: _goToLoginPage,
-                                      auraController: _bgController,
-                                      width: 150, height: 40,
-                                      child: _buildButtonContent('sign in', Icons.arrow_forward),
-                                    ),
-                                  ),
-                                  ButtonBulge(
-                                    child: AuraButton(
-                                      onPressed: _goToSignupPage,
-                                      outlined: true,
-                                      auraController: _bgController,
-                                      width: 150, height: 40,
-                                      child: _buildButtonContent('create', Icons.person_add_outlined),
-                                    ),
-                                  ),
-                                  ButtonBulge(
-                                    child: AuraButton(
-                                      onPressed: _goToFAQPage,
-                                      outlined: true,
-                                      auraController: _bgController,
-                                      width: 150, height: 40,
-                                      child: _buildButtonContent('F.A.Q.s', Icons.help_outline_rounded),
-                                    ),
-                                  ),
-                                  ButtonBulge(
-                                    child: MouseRegion(
-                                      onEnter: (_) => setState(() => _isPricingHovered = true),
-                                      onExit:  (_) => setState(() => _isPricingHovered = false),
-                                      child: AnimatedContainer(
-                                        duration: const Duration(milliseconds: 200),
-                                        curve: Curves.easeOut,
+                                  Wrap(
+                                    spacing: 16,
+                                    runSpacing: 16,
+                                    alignment: WrapAlignment.center,
+                                    children: [
+                                      ButtonBulge(
                                         child: AuraButton(
-                                          onPressed: _goToPricingPage,
-                                          outlined: !_isPricingHovered,
-                                          backgroundColor: _isPricingHovered ? Colors.white : null,
+                                          onPressed: _goToLoginPage,
                                           auraController: _bgController,
-                                          width: 180, height: 40,
-                                          child: _buildButtonContent(
-                                            'pricing',
-                                            Icons.sell_outlined,
-                                            textColor: _isPricingHovered ? Colors.black : null,
+                                          width: 150, height: 40,
+                                          child: _buildButtonContent('sign in', Icons.arrow_forward),
+                                        ),
+                                      ),
+                                      ButtonBulge(
+                                        child: AuraButton(
+                                          onPressed: _goToSignupPage,
+                                          outlined: true,
+                                          auraController: _bgController,
+                                          width: 150, height: 40,
+                                          child: _buildButtonContent('create', Icons.person_add_outlined),
+                                        ),
+                                      ),
+                                      ButtonBulge(
+                                        child: AuraButton(
+                                          onPressed: _goToFAQPage,
+                                          outlined: true,
+                                          auraController: _bgController,
+                                          width: 150, height: 40,
+                                          child: _buildButtonContent('F.A.Q.s', Icons.help_outline_rounded),
+                                        ),
+                                      ),
+                                      ButtonBulge(
+                                        child: MouseRegion(
+                                          onEnter: (_) => setState(() => _isPricingHovered = true),
+                                          onExit:  (_) => setState(() => _isPricingHovered = false),
+                                          child: AnimatedContainer(
+                                            duration: const Duration(milliseconds: 200),
+                                            curve: Curves.easeOut,
+                                            child: AuraButton(
+                                              onPressed: _goToPricingPage,
+                                              outlined: !_isPricingHovered,
+                                              backgroundColor: _isPricingHovered ? Colors.white : null,
+                                              auraController: _bgController,
+                                              width: 180, height: 40,
+                                              child: _buildButtonContent('pricing', Icons.sell_outlined, textColor: _isPricingHovered ? Colors.black : null),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 60),
+                                  // FIXED: Changed Row to Wrap to solve Pixel Overflow
+                                  Wrap(
+                                    alignment: WrapAlignment.center,
+                                    spacing: 40,
+                                    runSpacing: 20,
+                                    children: [
+                                      // QuantMessage Large Button
+                                      MouseRegion(
+                                        onEnter: (_) => setState(() => _quantHovered = true),
+                                        onExit:  (_) => setState(() => _quantHovered = false),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(milliseconds: 250),
+                                          width: 240, // Slightly increased for better feel
+                                          height: 65,
+                                          decoration: BoxDecoration(
+                                            color: _quantHovered ? Colors.white : const Color(0xFF000000),
+                                            borderRadius: BorderRadius.circular(16),
+                                            border: Border.all(
+                                              color: neonGreen.withOpacity(_quantHovered ? 0.8 : 0.4),
+                                              width: 1.5,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: neonGreen.withOpacity(_quantHovered ? 0.4 : 0.2),
+                                                blurRadius: 20,
+                                                spreadRadius: 2,
+                                                offset: const Offset(0, 5),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: QuantMessageButton(
+                                              onTap: () => _launchURL('https://quantmessage-application.vercel.app'),
+                                              accentColor: _quantHovered ? Colors.black : QuantMessageButton.cyan,
+                                              label: 'QuantMessage',
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // Windcrest Large Button
+                                      MouseRegion(
+                                        onEnter: (_) => setState(() => _windcrestHovered = true),
+                                        onExit:  (_) => setState(() => _windcrestHovered = false),
+                                        child: GestureDetector(
+                                          onTap: () => _launchURL('https://windcrest-gilt.vercel.app'),
+                                          child: AnimatedContainer(
+                                            duration: const Duration(milliseconds: 250),
+                                            width: 240, // Slightly increased for better feel
+                                            height: 65,
+                                            alignment: Alignment.center,
+                                            decoration: BoxDecoration(
+                                              color: _windcrestHovered ? Colors.white : const Color(0xFF000000),
+                                              borderRadius: BorderRadius.circular(16),
+                                              border: Border.all(
+                                                color: neonGreen.withOpacity(_windcrestHovered ? 0.8 : 0.4),
+                                                width: 1.5,
+                                              ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: neonGreen.withOpacity(_windcrestHovered ? 0.4 : 0.2),
+                                                  blurRadius: 20,
+                                                  spreadRadius: 2,
+                                                  offset: const Offset(0, 5),
+                                                ),
+                                              ],
+                                            ),
+                                            child: WindcrestLogo(
+                                              height: 30, // Increased size
+                                              textColor: _windcrestHovered ? Colors.black : Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -418,7 +399,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-
 
                   AnimatedOpacity(
                     opacity: _computingAnimated ? 1.0 : 0.0,
@@ -455,7 +435,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: Container(
@@ -479,7 +458,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             child: LayoutBuilder(
                               builder: (context, constraints) {
                                 final bool mobile = constraints.maxWidth < 1000;
-
                                 if (mobile) {
                                   return Column(
                                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -494,7 +472,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     ],
                                   );
                                 }
-
                                 return Center(
                                   child: ConstrainedBox(
                                     constraints: const BoxConstraints(maxWidth: 1200),
@@ -528,7 +505,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-
                   FadeTransition(
                     opacity: _overlaysPanelFade,
                     child: SlideTransition(
@@ -537,13 +513,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-
                   const _OverlaysExtendedSection(),
 
-
-                  // < Capabilities > — visual web of what QuantMessage can do,
-                  // shown ahead of the FeaturesOverlay so the categories/
-                  // sub-categories register before the detailed cards below.
                   AnimatedOpacity(
                     opacity: _featuresWebAnimated ? 1.0 : 0.0,
                     duration: const Duration(milliseconds: 800),
@@ -553,14 +524,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-
                   FadeTransition(
                     opacity: _featuresFadeAnimation,
                     child: FeaturesOverlay(
                       bgController: _bgController,
                     ),
                   ),
-
 
                   BottomInfoPanel(),
                 ],
@@ -571,8 +540,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
-
-
 
   Widget _buildDescriptiveText() {
     return Column(
@@ -604,8 +571,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ],
     );
   }
-
-
 
   Widget _buildEarlyAccessPanel(double screenWidth, bool isMobile) {
     return Column(
@@ -659,9 +624,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             );
           },
         ),
-
         const SizedBox(height: 30),
-
         Container(
           width:  isMobile ? screenWidth * 0.8 : 320,
           height: 52,
@@ -703,9 +666,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ],
           ),
         ),
-
         const SizedBox(height: 60),
-
         Wrap(
           spacing: 12, runSpacing: 12, alignment: WrapAlignment.center,
           children: [
@@ -713,9 +674,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ButtonBulge(child: GoogleButton(onPressed: _goToGoogleLoginPage, width: 150, height: 40)),
           ],
         ),
-
         const SizedBox(height: 30),
-
         GestureDetector(
           onTap: _goToFAQPage,
           child: Text(
@@ -730,8 +689,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ],
     );
   }
-
-
 
   Widget _buildButtonContent(String text, IconData icon, {Color? textColor}) {
     return Row(
@@ -757,19 +714,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 }
 
-
-
-/// Section wrapping FeaturesWebAnimation with a heading, sized responsively
-/// so the orbiting web doesn't overflow on narrow screens.
 class _FeaturesWebSection extends StatelessWidget {
   final bool isMobile;
-
   const _FeaturesWebSection({required this.isMobile});
 
   @override
   Widget build(BuildContext context) {
     final double webSize = isMobile ? 340 : 460;
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 24),
@@ -811,8 +762,6 @@ class _FeaturesWebSection extends StatelessWidget {
   }
 }
 
-
-
 class _OverlaysExtendedSection extends StatelessWidget {
   const _OverlaysExtendedSection();
 
@@ -820,7 +769,7 @@ class _OverlaysExtendedSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 30, horizontal: 20), // ← reduced margin
+      margin: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1300),
@@ -831,15 +780,12 @@ class _OverlaysExtendedSection extends StatelessWidget {
             'Manage all your messages with AI-powered intelligence. '
                 'Available across desktop, mobile, and web platforms with seamless synchronization.',
             maxWidth: 1300,
-
           ),
         ),
       ),
     );
   }
 }
-
-
 
 class ParagraphTypingAnimation extends StatefulWidget {
   final AnimationController controller;
@@ -854,8 +800,7 @@ class ParagraphTypingAnimation extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ParagraphTypingAnimation> createState() =>
-      _ParagraphTypingAnimationState();
+  State<ParagraphTypingAnimation> createState() => _ParagraphTypingAnimationState();
 }
 
 class _ParagraphTypingAnimationState extends State<ParagraphTypingAnimation> {

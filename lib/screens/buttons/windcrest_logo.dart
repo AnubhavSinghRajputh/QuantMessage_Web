@@ -3,13 +3,9 @@ import 'package:flutter/material.dart';
 
 class WindcrestLogo extends StatelessWidget {
   final double height;
-
   final Color markColor;
-
   final Color textColor;
-
   final bool showWordmark;
-
   final double? strokeWidth;
 
   const WindcrestLogo({
@@ -65,10 +61,7 @@ class _MountainMarkPainter extends CustomPainter {
   final Color color;
   final double strokeWidth;
 
-  _MountainMarkPainter({
-    required this.color,
-    required this.strokeWidth,
-  });
+  _MountainMarkPainter({required this.color, required this.strokeWidth});
 
   @override
   void paint(Canvas canvas, Size size) {
