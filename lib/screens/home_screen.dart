@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'app_bar.dart';
 import 'premium_effects.dart';
 import 'signup_page/login_page.dart';
@@ -28,6 +29,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  // Kept this helper method in case you need to use it elsewhere in the state
+  Future<void> _launchURL(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      debugPrint('Could not launch $url');
+    }
+  }
+
   late AnimationController _bgController;
   late AnimationController _textController;
   late Animation<double>   _fadeInAnimation;
@@ -352,6 +361,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 runSpacing: 16,
                                 alignment: WrapAlignment.center,
                                 children: [
+                                  // REMOVED: Launch App Button as requested
                                   ButtonBulge(
                                     child: AuraButton(
                                       onPressed: _goToLoginPage,

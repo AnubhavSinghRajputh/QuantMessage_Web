@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:url_launcher/url_launcher.dart';
 
-// import 'package:newsos_app/screens/app_bar_menu/about/windcrest_page.dart';
-
 class PremiumDropdown extends StatefulWidget {
   final String label;
   final List<DropdownColumn> columns;
@@ -158,10 +156,16 @@ class _DropdownContentState extends State<_DropdownContent> with SingleTickerPro
     );
 
     _opacityAnimation = _scaleAnimation;
-
     _controller.forward();
-
     widget.closeNotifier.addListener(_handleCloseSignal);
+  }
+
+  // Helper method to handle URL launching
+  Future<void> _launchExternalUrl(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      debugPrint('Could not launch $url');
+    }
   }
 
   void _handleCloseSignal() {
@@ -231,17 +235,17 @@ class _DropdownContentState extends State<_DropdownContent> with SingleTickerPro
   }
 
   Widget _buildItem(DropdownItem item) {
-    final VoidCallback effectiveOnTap = item.title == 'Windcrest'
-        ? () async {
-      final Uri url = Uri(scheme: 'https', host: 'windcrest-gilt.vercel.app');
-      if (!await launchUrl(
-        url,
-        mode: LaunchMode.externalApplication,
-      )) {
-        throw 'Could not launch $url';
+    // LOGIC MODIFIED HERE:
+    // If title is QuantMessage or Windcrest, open their respective URLs.
+    final VoidCallback effectiveOnTap = () {
+      if (item.title == 'QuantMessage') {
+        _launchExternalUrl('https://quantmessage-application.vercel.app');
+      } else if (item.title == 'Windcrest') {
+        _launchExternalUrl('https://windcrest-gilt.vercel.app');
+      } else {
+        item.onTap();
       }
-    }
-        : item.onTap;
+    };
 
     return InkWell(
       onTap: effectiveOnTap,

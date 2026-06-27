@@ -1,8 +1,17 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart'; // Added import for web launching
 //  imports based on folder structure
 import 'app_bar_menu/premium_dropdown.dart';
 import 'button_buldge.dart';
+
+// Helper function to handle URL launching
+Future<void> _launchURL(String urlString) async {
+  final Uri url = Uri.parse(urlString);
+  if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+    debugPrint('Could not launch $url');
+  }
+}
 
 class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -174,7 +183,11 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   DropdownColumn(
                                     title: "PRODUCTS",
                                     items: [
-                                      DropdownItem(title: "QuantMessage", onTap: () {}),
+                                      // MODIFIED: QuantMessage launch for mobile menu
+                                      DropdownItem(
+                                          title: "QuantMessage",
+                                          onTap: () => _launchURL('https://quantmessage-application.vercel.app')
+                                      ),
                                       DropdownItem(title: "QuantSync", onTap: () {}),
                                     ],
                                   ),
@@ -197,7 +210,22 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
   // Data Helpers
   List<DropdownColumn> _getAboutColumns() {
     return [
-      DropdownColumn(title: "PRODUCTS", items: [DropdownItem(title: "QuantMessage", onTap: () {}), DropdownItem(title: "QuantSync", onTap: () {}), DropdownItem(title: "Windcrest", onTap: () {}),]),
+      DropdownColumn(
+        title: "PRODUCTS",
+        items: [
+          // MODIFIED: QuantMessage link
+          DropdownItem(
+              title: "QuantMessage",
+              onTap: () => _launchURL('https://quantmessage-application.vercel.app')
+          ),
+          DropdownItem(title: "QuantSync", onTap: () {}),
+          // MODIFIED: Windcrest link
+          DropdownItem(
+              title: "Windcrest",
+              onTap: () => _launchURL('https://windcrest-gilt.vercel.app')
+          ),
+        ],
+      ),
       DropdownColumn(title: "FEATURES", items: [DropdownItem(title: "Chrome Extension", onTap: () {}, hasExternalLink: true), DropdownItem(title: "Slack Integration", onTap: () {}), DropdownItem(title: "Microsoft 365", onTap: () {}),]),
       DropdownColumn(title: "MODELS", items: [DropdownItem(title: "Opus", onTap: () {}), DropdownItem(title: "Sonnet", onTap: () {}), DropdownItem(title: "Haiku", onTap: () {}),]),
     ];
